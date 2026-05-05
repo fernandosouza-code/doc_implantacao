@@ -603,7 +603,7 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ─── CONFIGURAÇÃO SUPABASE ─── */
-const SUPABASE_URL = 'https://riiaikmqdumhhpbedlyp.supabase.co;
+const SUPABASE_URL = 'https://riiaikmqdumhhpbedlyp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpaWFpa21xZHVtaGhwYmVkbHlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTcyODQsImV4cCI6MjA5MzUzMzI4NH0.NSrTLf2K08UUx2Wc0FlL55HoXFEt61Emf0xh1D1LBHg';
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -699,6 +699,17 @@ function saveF() {
     ['forca','desaf','rec'].forEach(k=>d['l'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('l-'+k));
     F.dados = d;
     persist(); // Troca o persist() por persist()
+}
+  function syncFormFields() {
+    if(!F.stk)F.stk=[];if(!F.bases)F.bases=[];if(!F.risks)F.risks=[];if(!F.costs)F.costs=[];if(!F.matriz)F.matriz=[];
+    const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+    const d=F.dados||{};
+    ['nome','resp','pat','prod','data','prazo','crit','obj','entrega'].forEach(k=>set('f-'+k,d[k]));
+    ['total','cancel','tipo','custom'].forEach(k=>set('fr-'+k,d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]));
+    set('c-obs',d.cObs);
+    ['teste','visitas','nst','nsc','tempo'].forEach(k=>set('m-'+k,d['m'+k.charAt(0).toUpperCase()+k.slice(1)]));
+    ['forca','desaf','rec'].forEach(k=>set('l-'+k,d['l'+k.charAt(0).toUpperCase()+k.slice(1)]));
+    calcFinal(); renderStk(); renderMatriz(); renderBases(); renderRisks(); renderCosts();
 }
 
 function calcFinal(){
@@ -802,7 +813,10 @@ function loadG(){
   renderG();
 }
 
-function saveG(){try{persist()(gkey(currentId),JSON.stringify(G));}catch(ex){}setSaved('saved');}
+function saveG() { 
+    persist(); 
+    setSaved('saved'); 
+}
 
 function onGCfg(){
   const s=document.getElementById('g-start').value;
@@ -1198,14 +1212,14 @@ document.getElementById('modal-bg').addEventListener('click',ev=>{if(ev.target==
 /* ─── DIÁRIO DE BORDO ─── */
 function dkey(id){ return 'cobli_diario_'+id; }
 
-function loadDiario(){
-  try{ const s=localStorage.getItem(dkey(currentId)); if(s) return JSON.parse(s); } catch(e){}
-  return [];
+function loadDiario(){ 
+    return window._diarioLocal || []; 
 }
-
-function saveDiario(logs){
-  try{ persist()(dkey(currentId), JSON.stringify(logs)); } catch(e){}
-  setSaved('saved');
+  
+function saveDiario(logs){ 
+    window._diarioLocal = logs; 
+    persist(); 
+    setSaved('saved'); 
 }
 
 const TYPE_CLASS={
@@ -1574,10 +1588,7 @@ function renderDashboard(){
 }
 
 /* ─── INIT ─── */
-loadMeta();
-renderProjBar();
-loadF();
-loadG();
+init();
 </script>
 </body>
 </html>
