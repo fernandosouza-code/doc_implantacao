@@ -296,7 +296,6 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 <body>
 <div class="app">
 
-  <!-- TOP NAV -->
   <div class="topnav">
     <div class="nav-brand">
       <div class="nav-logo">
@@ -310,13 +309,10 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
     </div>
   </div>
 
-  <!-- PROJECT TABS -->
   <div class="proj-bar" id="proj-bar">
-    <!-- rendered by JS -->
     <button class="btn-new-proj" onclick="openNewModal()">+ novo cliente</button>
   </div>
 
-  <!-- SECTION TABS -->
   <div class="tabbar">
     <div class="tab" onclick="switchTab('dashboard',this)">Dashboard</div>
     <div class="tab active" onclick="switchTab('form',this)">Documentação do projeto</div>
@@ -324,14 +320,12 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
     <div class="tab" onclick="switchTab('diario',this)" style="display:flex;align-items:center;gap:6px">Diário de Bordo <span style="font-size:9px;font-weight:600;background:#faeeda;color:#633806;padding:1px 6px;border-radius:999px">Interno</span></div>
   </div>
 
-  <!-- DIÁRIO DE BORDO -->
   <div class="content" id="tab-diario" style="display:none">
     <div class="diario-header">
       <div class="log-stat-bar" id="log-stats"></div>
       <button class="btn-ghost" onclick="toggleLogForm()" id="btn-add-log" style="background:var(--navy);color:#fff;border-color:var(--navy)">+ novo registro</button>
     </div>
 
-    <!-- FORM NOVO REGISTRO -->
     <div class="log-form-card" id="log-form" style="display:none">
       <div class="log-form-grid">
         <div class="f"><label>Data</label><input type="date" id="log-data"></div>
@@ -365,7 +359,6 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       </div>
     </div>
 
-    <!-- FILTROS -->
     <div class="diario-filters" style="margin-bottom:14px">
       <select id="filter-tipo" onchange="renderDiario()">
         <option value="">Todos os tipos</option>
@@ -385,11 +378,9 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       <input type="text" id="filter-search" placeholder="Buscar nos registros..." oninput="renderDiario()" style="width:200px">
     </div>
 
-    <!-- LISTA -->
     <div id="log-list"></div>
   </div>
 
-  <!-- DASHBOARD -->
   <div class="dash-content" id="tab-dashboard" style="display:none">
     <div class="dash-filter">
       <label>Visualizar:</label>
@@ -400,7 +391,6 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
     <div id="dash-body"></div>
   </div>
 
-  <!-- FORM -->
   <div class="content" id="tab-form">
 
     <div class="card">
@@ -443,7 +433,6 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       </div>
     </div>
 
-    <!-- MATRIZ DE COMUNICAÇÃO -->
     <div class="card">
       <div class="card-head" onclick="toggleCard(this)">
         <div class="card-num">2.1</div><div class="card-title">Matriz de comunicação</div><div class="card-chev">▾</div>
@@ -558,10 +547,7 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       </div>
     </div>
 
-  </div><!-- /tab-form -->
-
-  <!-- GANTT -->
-  <div class="content" id="tab-gantt" style="display:none">
+  </div><div class="content" id="tab-gantt" style="display:none">
     <div class="gantt-toolbar">
       <label>Início</label><input type="date" id="g-start" onchange="onGCfg()">
       <label>Fim</label><input type="date" id="g-end" onchange="onGCfg()">
@@ -576,7 +562,6 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
     <div class="gantt-outer"><div id="gw"></div></div>
   </div>
 
-  <!-- EXPORT BAR -->
   <div class="export-bar" id="export-bar">
     <button class="btn-export primary" onclick="exportXLSX()">↓ Exportar Excel</button>
     <button class="btn-export secondary" onclick="exportPDF('interno')" title="Inclui custos e lições aprendidas">↓ PDF Interno</button>
@@ -587,7 +572,6 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 
 </div>
 
-<!-- MODAL NOVO PROJETO -->
 <div class="modal-bg" id="modal-bg">
   <div class="modal">
     <h3>Novo projeto de implantação</h3>
@@ -600,12 +584,13 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ─── CONFIGURAÇÃO SUPABASE ─── */
 const SUPABASE_URL = 'https://riiaikmqdumhhpbedlyp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpaWFpa21xZHVtaGhwYmVkbHlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTcyODQsImV4cCI6MjA5MzUzMzI4NH0.NSrTLf2K08UUx2Wc0FlL55HoXFEt61Emf0xh1D1LBHg';
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* ─── ESTADO GLOBAL ─── */
 let projects = [];
@@ -627,7 +612,7 @@ async function init() {
 }
 
 async function loadProjects() {
-  const { data, error } = await supabase.from('projects').select('*').order('created_at');
+  const { data, error } = await supa.from('projects').select('*').order('created_at');
   if (!error && data) projects = data;
   renderProjBar();
 }
@@ -636,7 +621,7 @@ async function switchProject(id) {
   currentId = id;
   setSaved('saving');
   
-  const { data, error } = await supabase
+  const { data, error } = await supa
     .from('project_data')
     .select('*')
     .eq('project_id', id)
@@ -661,7 +646,7 @@ async function switchProject(id) {
 async function persist() {
   if(!currentId) return;
   setSaved('saving');
-  const { error } = await supabase.from('project_data').upsert({
+  const { error } = await supa.from('project_data').upsert({
     project_id: currentId,
     form_json: F,
     gantt_json: G,
@@ -675,10 +660,10 @@ async function createProject() {
   const name = document.getElementById('modal-input').value.trim();
   if (!name) return;
 
-  const { data, error } = await supabase.from('projects').insert([{ name }]).select();
+  const { data, error } = await supa.from('projects').insert([{ name }]).select();
   if (!error && data.length > 0) {
     const newProj = data[0];
-    await supabase.from('project_data').insert([{ project_id: newProj.id }]);
+    await supa.from('project_data').insert([{ project_id: newProj.id }]);
     await loadProjects();
     await switchProject(newProj.id);
     closeModal();
@@ -698,7 +683,7 @@ async function deleteProject(){
   const p = projects.find(x=>x.id===currentId);
   if(!confirm(`Excluir o projeto "${p.name}" permanentemente?`)) return;
   
-  await supabase.from('projects').delete().eq('id', currentId);
+  await supa.from('projects').delete().eq('id', currentId);
   await loadProjects();
   if(projects.length > 0) {
       await switchProject(projects[0].id);
@@ -709,7 +694,7 @@ async function confirmDelete(id, ev){
   ev.stopPropagation();
   const p = projects.find(x=>x.id===id);
   if(!confirm(`Excluir o projeto "${p.name}"? Esta ação não pode ser desfeita.`)) return;
-  await supabase.from('projects').delete().eq('id', id);
+  await supa.from('projects').delete().eq('id', id);
   await loadProjects();
   if(id === currentId && projects.length > 0) {
       await switchProject(projects[0].id);
@@ -722,7 +707,7 @@ async function renameProjectConfirm(id, newName) {
     const p = projects.find(x=>x.id===id);
     if(p) {
         p.name = newName;
-        await supabase.from('projects').update({ name: newName }).eq('id', id);
+        await supa.from('projects').update({ name: newName }).eq('id', id);
         renderProjBar();
     }
 }
@@ -1264,8 +1249,7 @@ async function renderDashboard(){
     return;
   }
 
-  // Busca dados de todos os projetos no Supabase para montar o dashboard
-  const { data } = await supabase.from('project_data').select('*');
+  const { data } = await supa.from('project_data').select('*');
   
   const allData=list.map(p=>{
     const pd = data?.find(d => d.project_id === p.id);
@@ -1575,3 +1559,6 @@ document.getElementById('modal-bg').addEventListener('click',ev=>{if(ev.target==
 
 /* ─── BOOT ─── */
 init();
+</script>
+</body>
+</html>
