@@ -610,106 +610,229 @@ const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 /* ─── ESTADO GLOBAL ─── */
 let projects = [];
 let currentId = null;
-let F = {stk:[],bases:[],risks:[],costs:[],matriz:[]};
+let F = {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
 let G = {startDate:'',endDate:'',tasks:[]};
+window._diarioLocal = [];
 
-/* ─── LÓGICA DE DADOS (SUPABASE) ─── */
-
+/* ─── INICIALIZAÇÃO SUPABASE ─── */
 async function init() {
+  setSaved('saving');
+  await loadProjects();
+  if (projects.length > 0) {
+    await switchProject(projects[0].id);
+  } else {
+    renderProjBar();
+    setSaved('saved');
+  }
+}
+
+async function loadProjects() {
+  const { data, error } = await supabase.from('projects').select('*').order('created_at');
+  if (!error && data) projects = data;
+  renderProjBar();
+}
+
+async function switchProject(id) {
+  currentId = id;
+  setSaved('saving');
+  
+  const { data, error } = await supabase
+    .from('project_data')
+    .select('*')
+    .eq('project_id', id)
+    .single();
+
+  if (data) {
+    F = data.form_json || {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
+    G = data.gantt_json || {startDate:'',endDate:'',tasks:[]};
+    window._diarioLocal = data.diario_json || []; 
+  } else {
+    F = {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
+    G = {startDate:'',endDate:'',tasks:[]};
+    window._diarioLocal = [];
+  }
+
+  renderProjBar();
+  syncFormFields(); 
+  loadG();
+  setSaved('saved');
+}
+
+async function persist() {
+  if(!currentId) return;
+  setSaved('saving');
+  const { error } = await supabase.from('project_data').upsert({
+    project_id: currentId,
+    form_json: F,
+    gantt_json: G,
+    diario_json: window._diarioLocal,
+    updated_at: new Date()
+  });
+  if (!error) setSaved('saved');
+}
+
+async function createProject() {
+  const name = document.getElementById('modal-input').value.trim();
+  if (!name) return;
+
+  const { data, error } = await supabase.from('projects').insert([{ name }]).select();
+  if (!error && data.length > 0) {
+    const newProj = data[0];
+    await supabase.from('project_data').insert([{ project_id: newProj.id }]);
     await loadProjects();
-    if (projects.length > 0) {
-        await switchProject(projects[0].id);
-    } else {
+    await switchProject(newProj.id);
+    closeModal();
+  }
+}
+
+async function deleteProject(){
+  if(projects.length===1){
+    if(!confirm('Limpar todos os dados deste projeto?')) return;
+    F = {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
+    G = {startDate:'',endDate:'',tasks:[]};
+    window._diarioLocal = [];
+    persist();
+    syncFormFields(); loadG();
+    return;
+  }
+  const p = projects.find(x=>x.id===currentId);
+  if(!confirm(`Excluir o projeto "${p.name}" permanentemente?`)) return;
+  
+  await supabase.from('projects').delete().eq('id', currentId);
+  await loadProjects();
+  if(projects.length > 0) {
+      await switchProject(projects[0].id);
+  }
+}
+
+async function confirmDelete(id, ev){
+  ev.stopPropagation();
+  const p = projects.find(x=>x.id===id);
+  if(!confirm(`Excluir o projeto "${p.name}"? Esta ação não pode ser desfeita.`)) return;
+  await supabase.from('projects').delete().eq('id', id);
+  await loadProjects();
+  if(id === currentId && projects.length > 0) {
+      await switchProject(projects[0].id);
+  } else {
+      renderProjBar();
+  }
+}
+
+async function renameProjectConfirm(id, newName) {
+    const p = projects.find(x=>x.id===id);
+    if(p) {
+        p.name = newName;
+        await supabase.from('projects').update({ name: newName }).eq('id', id);
         renderProjBar();
     }
 }
 
-async function loadProjects() {
-    const { data, error } = await supabase.from('projects').select('*').order('created_at');
-    if (!error) projects = data;
-    renderProjBar();
+/* ─── UTILITÁRIOS & UI ─── */
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+const CATS = ['Prestador','Viagem','Material','Adesão','Outros'];
+const STATS = ['Pendente','Pago','A receber'];
+const brl = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
+function e(s){return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+function switchTab(tab,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-dashboard').style.display = tab==='dashboard'?'block':'none';
+  document.getElementById('tab-form').style.display = tab==='form'?'block':'none';
+  document.getElementById('tab-gantt').style.display = tab==='gantt'?'block':'none';
+  document.getElementById('tab-diario').style.display = tab==='diario'?'block':'none';
+  document.getElementById('export-bar').style.display = tab==='dashboard'?'none':'flex';
+  if(tab==='dashboard') renderDashboard();
+  if(tab==='diario') renderDiario();
 }
 
-async function switchProject(id) {
-    currentId = id;
-    setSaved('saving');
-    
-    const { data, error } = await supabase
-        .from('project_data')
-        .select('*')
-        .eq('project_id', id)
-        .single();
-
-    if (data) {
-        F = data.form_json;
-        G = data.gantt_json;
-        // O Diário de bordo pode ser carregado aqui ou sob demanda
-        window._diarioLocal = data.diario_json || []; 
-    } else {
-        // Inicializa projeto novo se não houver dados
-        F = {stk:[],bases:[],risks:[],costs:[],matriz:[]};
-        G = {startDate:'',endDate:'',tasks:[]};
-        window._diarioLocal = [];
-    }
-
-    renderProjBar();
-    syncFormFields(); // Preenche os inputs do HTML com o objeto F
-    renderG();
-    setSaved('saved');
+function toggleCard(hdr){
+  const body = hdr.nextElementSibling;
+  const chev = hdr.querySelector('.card-chev');
+  const open = body.classList.toggle('open');
+  chev.classList.toggle('open',open);
+  hdr.classList.toggle('open',open);
 }
 
-// Função para salvar tudo no banco
-async function persist() {
-    setSaved('saving');
-    const { error } = await supabase.from('project_data').upsert({
-        project_id: currentId,
-        form_json: F,
-        gantt_json: G,
-        diario_json: window._diarioLocal,
-        updated_at: new Date()
-    });
-    if (!error) setSaved('saved');
+function setSaved(s){
+  const el = document.getElementById('save-status');
+  el.textContent = s==='saved'?'Salvo':'Salvando...';
+  el.className = s==='saved'?'save-pill':'save-pill saving';
 }
 
-/* ─── ADAPTAÇÕES NAS FUNÇÕES EXISTENTES ─── */
+function getVal(id){ const el=document.getElementById(id); return el?el.value:''; }
 
-// Substitua sua createProject por esta:
-async function createProject() {
-    const name = document.getElementById('modal-input').value.trim();
-    if (!name) return;
-
-    const { data, error } = await supabase.from('projects').insert([{ name }]).select();
-    if (!error) {
-        const newProj = data[0];
-        await supabase.from('project_data').insert([{ project_id: newProj.id }]);
-        await loadProjects();
-        await switchProject(newProj.id);
-        closeModal();
-    }
+function openNewModal(){
+  document.getElementById('modal-input').value = '';
+  document.getElementById('modal-bg').classList.add('open');
+  setTimeout(()=>document.getElementById('modal-input').focus(), 100);
 }
 
-// No seu código, onde houver "saveF()" ou "saveG()", 
-// você deve garantir que eles atualizem os objetos F ou G e chamem persist()
-function saveF() {
-    const d = {};
-    ['nome','resp','pat','prod','data','prazo','crit','obj','entrega'].forEach(k=>d[k]=getVal('f-'+k));
-    ['total','cancel','tipo','custom'].forEach(k=>d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('fr-'+k));
-    d.cObs=getVal('c-obs');
-    ['teste','visitas','nst','nsc','tempo'].forEach(k=>d['m'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('m-'+k));
-    ['forca','desaf','rec'].forEach(k=>d['l'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('l-'+k));
-    F.dados = d;
-    persist(); // Troca o persist() por persist()
+function closeModal(){
+  document.getElementById('modal-bg').classList.remove('open');
 }
-  function syncFormFields() {
-    if(!F.stk)F.stk=[];if(!F.bases)F.bases=[];if(!F.risks)F.risks=[];if(!F.costs)F.costs=[];if(!F.matriz)F.matriz=[];
-    const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
-    const d=F.dados||{};
-    ['nome','resp','pat','prod','data','prazo','crit','obj','entrega'].forEach(k=>set('f-'+k,d[k]));
-    ['total','cancel','tipo','custom'].forEach(k=>set('fr-'+k,d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]));
-    set('c-obs',d.cObs);
-    ['teste','visitas','nst','nsc','tempo'].forEach(k=>set('m-'+k,d['m'+k.charAt(0).toUpperCase()+k.slice(1)]));
-    ['forca','desaf','rec'].forEach(k=>set('l-'+k,d['l'+k.charAt(0).toUpperCase()+k.slice(1)]));
-    calcFinal(); renderStk(); renderMatriz(); renderBases(); renderRisks(); renderCosts();
+
+function renderProjBar(){
+  const bar = document.getElementById('proj-bar');
+  let html = projects.map(p => `
+    <div class="proj-tab ${p.id===currentId?'active':''}" onclick="switchProject('${p.id}')" id="ptab-${p.id}">
+      <span class="proj-name-label">${e(p.name)}</span>
+      <button class="proj-edit" onclick="renameProject('${p.id}',event)" title="Renomear">✎</button>
+      ${projects.length>1 ? `<span class="proj-close" onclick="confirmDelete('${p.id}',event)">×</span>` : ''}
+    </div>`).join('');
+  html += `<button class="btn-new-proj" onclick="openNewModal()">+ novo cliente</button>`;
+  bar.innerHTML = html;
+}
+
+function renameProject(id, ev){
+  ev.stopPropagation();
+  const p = projects.find(x=>x.id===id);
+  const tab = document.getElementById('ptab-'+id);
+  const label = tab.querySelector('.proj-name-label');
+  const oldName = p.name;
+
+  const input = document.createElement('input');
+  input.className = 'proj-tab-input';
+  input.value = oldName;
+  label.replaceWith(input);
+  input.focus();
+  input.select();
+
+  function confirm(){
+    const val = input.value.trim()||oldName;
+    renameProjectConfirm(id, val);
+  }
+  input.addEventListener('blur', confirm);
+  input.addEventListener('keydown', ev2=>{
+    if(ev2.key==='Enter'){input.blur();}
+    if(ev2.key==='Escape'){p.name=oldName;input.blur();}
+    ev2.stopPropagation();
+  });
+  input.addEventListener('click', ev2=>ev2.stopPropagation());
+}
+
+/* ─── FORM ─── */
+function syncFormFields() {
+  if(!F.stk)F.stk=[];if(!F.bases)F.bases=[];if(!F.risks)F.risks=[];if(!F.costs)F.costs=[];if(!F.matriz)F.matriz=[];if(!F.dados)F.dados={};
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+  const d=F.dados;
+  ['nome','resp','pat','prod','data','prazo','crit','obj','entrega'].forEach(k=>set('f-'+k,d[k]));
+  ['total','cancel','tipo','custom'].forEach(k=>set('fr-'+k,d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]));
+  set('c-obs',d.cObs);
+  ['teste','visitas','nst','nsc','tempo'].forEach(k=>set('m-'+k,d['m'+k.charAt(0).toUpperCase()+k.slice(1)]));
+  ['forca','desaf','rec'].forEach(k=>set('l-'+k,d['l'+k.charAt(0).toUpperCase()+k.slice(1)]));
+  calcFinal(); renderStk(); renderMatriz(); renderBases(); renderRisks(); renderCosts();
+}
+
+function saveF(){
+  const d={};
+  ['nome','resp','pat','prod','data','prazo','crit','obj','entrega'].forEach(k=>d[k]=getVal('f-'+k));
+  ['total','cancel','tipo','custom'].forEach(k=>d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('fr-'+k));
+  d.cObs=getVal('c-obs');
+  ['teste','visitas','nst','nsc','tempo'].forEach(k=>d['m'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('m-'+k));
+  ['forca','desaf','rec'].forEach(k=>d['l'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('l-'+k));
+  F.dados=d;
+  persist();
 }
 
 function calcFinal(){
@@ -796,34 +919,23 @@ function calcCosts(){
   card.querySelector('.cost-label').textContent=dif>=0?'Saldo positivo':'Déficit';
 }
 
-function e(s){return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
-
 /* ─── GANTT ─── */
-let G = {startDate:'',endDate:'',tasks:[]};
-
 function loadG(){
-  try{ const s=localStorage.getItem(gkey(currentId)); if(s) G=JSON.parse(s); else G={startDate:'',endDate:'',tasks:[]}; } catch(ex){ G={startDate:'',endDate:'',tasks:[]}; }
   if(!G.tasks)G.tasks=[];
   if(!G.startDate){ const d=new Date(); G.startDate=d.toISOString().slice(0,10); }
   if(!G.endDate){ const d=new Date(G.startDate+'T00:00:00'); d.setDate(d.getDate()+30); G.endDate=d.toISOString().slice(0,10); }
-  // migrate old tasks with dur to endDate-based
-  G.tasks.forEach(t=>{ if(t.type==='task'){ if(!t.execStart)t.execStart=''; if(!t.execEnd)t.execEnd=''; } });
   document.getElementById('g-start').value=G.startDate;
   document.getElementById('g-end').value=G.endDate;
   renderG();
 }
 
-function saveG() { 
-    persist(); 
-    setSaved('saved'); 
-}
+function saveG(){ persist(); }
 
 function onGCfg(){
   const s=document.getElementById('g-start').value;
   const en=document.getElementById('g-end').value;
   if(s) G.startDate=s;
   if(en) G.endDate=en;
-  // ensure end >= start
   if(G.startDate && G.endDate && G.endDate<=G.startDate){
     const d=new Date(G.startDate+'T00:00:00');d.setDate(d.getDate()+1);
     G.endDate=d.toISOString().slice(0,10);
@@ -888,17 +1000,10 @@ function renderG(){
       return;
     }
 
-    // planned bar indices
-    const pS=dateToIdx(days,t.planStart);
-    const pE=dateToIdx(days,t.planEnd);
+    const pS=dateToIdx(days,t.planStart), pE=dateToIdx(days,t.planEnd);
     const hasPlan=pS>=0&&pE>=pS;
-
-    // exec bar indices
-    const eS=dateToIdx(days,t.execStart);
-    const eE=dateToIdx(days,t.execEnd);
+    const eS=dateToIdx(days,t.execStart), eE=dateToIdx(days,t.execEnd);
     const hasExec=eS>=0&&eE>=eS;
-
-    // is exec late? any exec day outside planned range
     const execLate=hasExec&&hasPlan&&(eS>pE||eE>pE);
 
     const dc=days.map((d,di)=>{
@@ -909,19 +1014,11 @@ function renderG(){
       const eIsF=di===eS,eIsL=di===eE;
 
       let bars='';
-      if(inPlan){
-        bars+=`<div class="gbar planned" data-ti="${ti}" data-role="plan" style="left:${pIsF?2:0}px;right:${pIsL?2:0}px;border-top-left-radius:${pIsF?4:0}px;border-bottom-left-radius:${pIsF?4:0}px;border-top-right-radius:${pIsL?4:0}px;border-bottom-right-radius:${pIsL?4:0}px"></div>`;
-      }
-      if(inExec){
-        const ec=execLate?'exec-late':'exec-ok';
-        bars+=`<div class="gbar exec ${ec}" data-ti="${ti}" data-role="exec" style="left:${eIsF?2:0}px;right:${eIsL?2:0}px;border-top-left-radius:${eIsF?4:0}px;border-bottom-left-radius:${eIsF?4:0}px;border-top-right-radius:${eIsL?4:0}px;border-bottom-right-radius:${eIsL?4:0}px"></div>`;
-      }
+      if(inPlan){ bars+=`<div class="gbar planned" data-ti="${ti}" data-role="plan" style="left:${pIsF?2:0}px;right:${pIsL?2:0}px;border-top-left-radius:${pIsF?4:0}px;border-bottom-left-radius:${pIsF?4:0}px;border-top-right-radius:${pIsL?4:0}px;border-bottom-right-radius:${pIsL?4:0}px"></div>`; }
+      if(inExec){ const ec=execLate?'exec-late':'exec-ok'; bars+=`<div class="gbar exec ${ec}" data-ti="${ti}" data-role="exec" style="left:${eIsF?2:0}px;right:${eIsL?2:0}px;border-top-left-radius:${eIsF?4:0}px;border-bottom-left-radius:${eIsF?4:0}px;border-top-right-radius:${eIsL?4:0}px;border-bottom-right-radius:${eIsL?4:0}px"></div>`; }
       const tln=isT?`<div class="today-ln"></div>`:'';
       return `<td class="dcell${wk?' wknd-cell':''}" data-ti="${ti}" data-di="${di}">${bars}${tln}</td>`;
     }).join('');
-
-    const planLabel=t.planStart&&t.planEnd?`<span class="gl-plan">▬ ${t.planStart.slice(5).replace('-','/')} → ${t.planEnd.slice(5).replace('-','/')}</span>`:'<span class="gl-plan" style="opacity:.4">▬ sem planejamento</span>';
-    const execLabel=t.execStart&&t.execEnd?`<span class="gl-exec">▬ ${t.execStart.slice(5).replace('-','/')} → ${t.execEnd.slice(5).replace('-','/')}</span>`:'<span style="opacity:.4;color:var(--text3)">▬ sem execução</span>';
 
     tbody+=`<tr class="task-tr" style="height:48px">
       <td class="tcell">
@@ -966,7 +1063,6 @@ function attachDrag(){
       const days=gdays();
       const dateStr=days[di].toISOString().slice(0,10);
       const t=G.tasks[ti];
-      // ctrl/meta = draw exec, else draw plan
       const role=ev.ctrlKey||ev.metaKey?'exec':'plan';
       if(role==='plan'){t.planStart=dateStr;t.planEnd=dateStr;}
       else{t.execStart=dateStr;t.execEnd=dateStr;}
@@ -988,252 +1084,17 @@ function attachDrag(){
   document.addEventListener('mouseup',()=>{if(drag){drag=null;}});
 }
 
-/* ─── EXPORTS ─── */
-function exportXLSX(){
-  const wb=XLSX.utils.book_new(),d=F.dados||{};
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Campo','Detalhe'],['Nome',d.nome],['Responsável',d.resp],['Patrocinador',d.pat],['Produto',d.prod],['Data início',d.data],['Prazo (dias)',d.prazo],['Objetivo',d.obj],['Critérios',d.crit],['Entregáveis',d.entrega]]),'Dados Chave');
-  const sr=[['Papel','Nome','Empresa','Telefone','E-mail']];F.stk.forEach(s=>sr.push([s.papel,s.nome,s.empresa,s.tel,s.email]));
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sr),'Stakeholders');
-  const mr=[['Informação/Assunto','Para quem','Quando','Como','Responsável']];F.matriz.forEach(m=>mr.push([m.assunto,m.para,m.quando,m.como,m.resp]));
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(mr),'Matriz de Comunicação');
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Item','Valor'],['Total contratado',d.frTotal],['Cancelados',d.frCancel],['Finalizando',(parseFloat(d.frTotal)||0)-(parseFloat(d.frCancel)||0)],['Tipo/Modelo',d.frTipo],['Customizações',d.frCustom]]),'Frota');
-  const br2=[['ID','Endereço','Responsável','Contato','Veículos','Produto']];F.bases.forEach(b=>br2.push([b.id,b.end,b.resp,b.tel,b.veic,b.prod]));
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(br2),'Bases');
-  const rr=[['Tipo','Descrição','Impacto','Mitigação']];F.risks.forEach(r=>rr.push([r.tipo,r.desc,r.imp,r.mit]));
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rr),'Riscos');
-  const cr=[['Descrição','Categoria','Status','Valor (R$)','Data']];F.costs.forEach(c=>cr.push([c.desc,c.cat,c.status,c.val,c.data]));
-  const custos=F.costs.filter(c=>c.cat!=='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
-  const adesao=F.costs.filter(c=>c.cat==='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
-  cr.push(['','','','',''],['Total custos','','',custos,''],['Adesão','','',adesao,''],['Diferença','','',adesao-custos,'']);
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cr),'Custos');
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Métrica','Resultado'],['Teste Cobli (%)',d.mTeste],['Visitas',d.mVisitas],['No-show técnico (%)',d.mNst],['No-show cliente (%)',d.mNsc],['Tempo médio',d.mTempo]]),'Métricas');
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Seção','Conteúdo'],['Forças',d.lForca],['Desafios',d.lDesaf],['Recomendações',d.lRec]]),'Aprendizados');
-  const gr=[['Tarefa','Base','Início Planejado','Fim Planejado','Início Executado','Fim Executado','Status']];
-  G.tasks.forEach(t=>{
-    if(t.type==='phase'){gr.push([`— ${t.name}`,'','','','','','']);return;}
-    const late=t.execEnd&&t.planEnd&&t.execEnd>t.planEnd?'Atrasado':t.execEnd?'Concluído':'Em andamento';
-    gr.push([t.name,t.base,t.planStart,t.planEnd,t.execStart,t.execEnd,late]);
-  });
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(gr),'Cronograma');
-  XLSX.writeFile(wb,`${(d.nome||'Implantacao').replace(/\s+/g,'_')}.xlsx`);
-  msg('Excel exportado!');
-}
-
-function exportPDF(mode='interno'){
-  const isCliente = mode==='cliente';
-  const d=F.dados||{};
-  const custos=F.costs.filter(c=>c.cat!=='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
-  const adesao=F.costs.filter(c=>c.cat==='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
-  const dif=adesao-custos;
-  const stH=F.stk.map(s=>`<tr><td>${s.papel}</td><td>${s.nome}</td><td>${s.empresa}</td><td>${s.tel}</td><td>${s.email}</td></tr>`).join('');
-  const bH=F.bases.map(b=>`<tr><td>${b.id}</td><td>${b.end}</td><td>${b.resp}</td><td>${b.tel}</td><td>${b.veic}</td></tr>`).join('');
-  const rH=F.risks.map(r=>`<tr><td>${r.tipo}</td><td>${r.desc}</td><td>${r.imp}</td><td>${r.mit}</td></tr>`).join('');
-  const cH=F.costs.map(c=>`<tr><td>${c.desc}</td><td>${c.cat}</td><td>${c.status}</td><td style="text-align:right">${brl(c.val)}</td><td>${c.data}</td></tr>`).join('');
-
-  // Gantt table
-  let ganttRows='';
-  G.tasks.forEach(t=>{
-    if(t.type==='phase'){
-      ganttRows+=`<tr><td colspan="6" style="background:#f0f2fa;font-weight:600;font-size:11px;color:#07074E;padding:5px 8px">${t.name}</td></tr>`;
-      return;
-    }
-    const late=t.execEnd&&t.planEnd&&t.execEnd>t.planEnd;
-    const done=!!t.execEnd;
-    const statusLbl=late?'Atrasado':done?'Concluído':'Em andamento';
-    const statusColor=late?'#cc3828':done?'#008a79':'#185FA5';
-    const fmtD=s=>s?s.split('-').reverse().join('/'):'-';
-    ganttRows+=`<tr>
-      <td style="padding-left:16px">${t.name}</td>
-      <td>${t.base||'-'}</td>
-      <td>${t.planStart&&t.planEnd?fmtD(t.planStart)+' → '+fmtD(t.planEnd):'-'}</td>
-      <td>${t.execStart&&t.execEnd?fmtD(t.execStart)+' → '+fmtD(t.execEnd):'-'}</td>
-      <td>${calcDeviation(t.planEnd,t.execEnd)}</td>
-      <td style="color:${statusColor};font-weight:500">${statusLbl}</td>
-    </tr>`;
-  });
-
-  // section numbering adjusts by mode
-  let sn=1;
-  const sec=title=>`<h2>${sn++}. ${title}</h2>`;
-
-  const css=`body{font-family:Arial,sans-serif;font-size:12px;color:#07074E;padding:32px;max-width:900px;margin:0 auto}
-    .hdr{display:flex;align-items:center;gap:10px;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #07074E}
-    .badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;margin-left:8px;vertical-align:middle}
-    .badge-interno{background:#faeeda;color:#633806}
-    .badge-cliente{background:#E1F5EE;color:#085041}
-    h1{font-size:18px;margin-bottom:4px}
-    h2{font-size:13px;margin:20px 0 6px;border-bottom:1px solid #dde0ee;padding-bottom:4px;color:#07074E}
-    table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px}
-    th{background:#f0f2fa;text-align:left;padding:5px 8px;border:1px solid #dde0ee;font-size:10px}
-    td{padding:4px 8px;border:1px solid #dde0ee;vertical-align:top}
-    .kv{display:grid;grid-template-columns:160px 1fr;gap:3px 0;margin-bottom:10px}
-    .k{color:#5a6080;font-size:11px;padding:3px 0}.v{font-size:11px;padding:3px 0}
-    .totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
-    .tc{padding:10px;border-radius:6px;border:1px solid #dde0ee}
-    .tc-label{font-size:10px;color:#9399bb;margin-bottom:3px}.tc-val{font-size:14px;font-weight:bold}
-    .tc.nav{background:#07074E}.tc.nav .tc-label{color:rgba(255,255,255,.55)}.tc.nav .tc-val{color:#fff}
-    .tc.pos{background:#E1F5EE}.tc.pos .tc-val{color:#008a79}
-    .tc.neg{background:#fff0ee}.tc.neg .tc-val{color:#cc3828}
-    pre{white-space:pre-wrap;font-family:Arial;font-size:11px}
-    .legend{display:flex;gap:16px;margin-bottom:8px;font-size:10px;color:#5a6080}
-    .leg-sq{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:3px;vertical-align:middle}
-    .footer{margin-top:32px;font-size:10px;color:#9399bb;border-top:1px solid #eef0f7;padding-top:8px;text-align:center}
-    @media print{body{padding:16px}}`;
-
-  const badge=isCliente
-    ?`<span class="badge badge-cliente">Documento Cliente</span>`
-    :`<span class="badge badge-interno">Uso Interno</span>`;
-
-  let body=`
-  <div class="hdr">
-    <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#001BB8"/><circle cx="16" cy="16" r="9" stroke="#fff" stroke-width="2" fill="none"/><circle cx="16" cy="16" r="3.5" fill="#fff"/></svg>
-    <div>
-      <div style="font-size:15px;font-weight:bold">Cobli · Implantação</div>
-      <div style="font-size:11px;color:#5a6080">Gerado em ${new Date().toLocaleDateString('pt-BR')}</div>
-    </div>
-  </div>
-  <h1>${d.nome||'Projeto de Implantação'} ${badge}</h1>
-
-  ${sec('Dados chave')}
-  <div class="kv">
-    <div class="k">Responsável</div><div class="v">${d.resp||''}</div>
-    <div class="k">Patrocinador</div><div class="v">${d.pat||''}</div>
-    <div class="k">Produto</div><div class="v">${d.prod||''}</div>
-    <div class="k">Data início</div><div class="v">${d.data||''}</div>
-    <div class="k">Prazo</div><div class="v">${d.prazo||''} dias</div>
-    <div class="k">Objetivo</div><div class="v"><pre>${d.obj||''}</pre></div>
-    <div class="k">Critérios de sucesso</div><div class="v">${d.crit||''}</div>
-  </div>
-
-  ${sec('Partes interessadas')}
-  <table><thead><tr><th>Papel</th><th>Nome</th><th>Empresa</th><th>Telefone</th><th>E-mail</th></tr></thead><tbody>${stH}</tbody></table>
-
-  <h3 style="font-size:12px;font-weight:600;color:#07074E;margin:12px 0 6px">2.1 Matriz de comunicação</h3>
-  <table><thead><tr><th>Informação / Assunto</th><th>Para quem</th><th>Quando</th><th>Como</th><th>Responsável</th></tr></thead>
-  <tbody>${F.matriz.map(m=>`<tr><td>${m.assunto||''}</td><td>${m.para||''}</td><td>${m.quando||''}</td><td>${m.como||''}</td><td>${m.resp||''}</td></tr>`).join('')}</tbody></table>
-
-  ${sec('Levantamento da frota')}
-  <div class="kv">
-    <div class="k">Total contratado</div><div class="v">${d.frTotal||''}</div>
-    <div class="k">Cancelados</div><div class="v">${d.frCancel||''}</div>
-    <div class="k">Finalizando</div><div class="v">${(parseFloat(d.frTotal)||0)-(parseFloat(d.frCancel)||0)}</div>
-    <div class="k">Tipo/Modelo</div><div class="v">${d.frTipo||''}</div>
-    <div class="k">Customizações</div><div class="v"><pre>${d.frCustom||''}</pre></div>
-  </div>
-
-  ${sec('Bases de operação e instalação')}
-  <table><thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Veículos</th></tr></thead><tbody>${bH}</tbody></table>
-
-  ${sec('Gestão de riscos e premissas')}
-  <table><thead><tr><th>Tipo</th><th>Descrição</th><th>Impacto</th><th>Mitigação</th></tr></thead><tbody>${rH}</tbody></table>
-
-  ${sec('Cronograma — Planejado vs. Executado')}
-  <div class="legend">
-    <span><span class="leg-sq" style="background:#001BB820;border:1px solid #001BB8"></span>Planejado</span>
-    <span><span class="leg-sq" style="background:#E1F5EE;border:1px solid #00AE97"></span>Executado no prazo</span>
-    <span><span class="leg-sq" style="background:#fff0ee;border:1px solid #FF4633"></span>Executado com atraso</span>
-  </div>
-  <table>
-    <thead><tr><th>Tarefa</th><th>Base</th><th>Período planejado</th><th>Período executado</th><th>Desvio</th><th>Status</th></tr></thead>
-    <tbody>${ganttRows}</tbody>
-  </table>`;
-
-  if(!isCliente){
-    // custos
-    body+=`
-  ${sec('Custos da implantação')}
-  <table><thead><tr><th>Descrição</th><th>Categoria</th><th>Status</th><th style="text-align:right">Valor</th><th>Data</th></tr></thead><tbody>${cH}</tbody></table>
-  <div class="totals">
-    <div class="tc"><div class="tc-label">Total custos</div><div class="tc-val">${brl(custos)}</div></div>
-    <div class="tc nav"><div class="tc-label">Valor de adesão</div><div class="tc-val">${brl(adesao)}</div></div>
-    <div class="tc ${dif>=0?'pos':'neg'}"><div class="tc-label">${dif>=0?'Saldo positivo':'Déficit'}</div><div class="tc-val">${brl(Math.abs(dif))}</div></div>
-  </div>`;
-  }
-
-  body+=`
-  ${sec('Métricas de resultado')}
-  <div class="kv">
-    <div class="k">Teste Cobli instalador</div><div class="v">${d.mTeste||''}%</div>
-    <div class="k">Qtd. de visitas</div><div class="v">${d.mVisitas||''}</div>
-    <div class="k">No-show técnico</div><div class="v">${d.mNst||''}%</div>
-    <div class="k">No-show cliente</div><div class="v">${d.mNsc||''}%</div>
-    <div class="k">Tempo médio instalação</div><div class="v">${d.mTempo||''}</div>
-  </div>`;
-
-  if(!isCliente){
-    const logs=loadDiario();
-    const fmtD2=s=>{if(!s)return '—';const[y,m,d]=s.split('-');return `${d}/${m}/${y}`;};
-    const logRows=logs.map(l=>{
-      const sc=l.status==='Resolvido'?'#008a79':l.status==='Em andamento'?'#854F0B':'#cc3828';
-      return `<tr><td>${fmtD2(l.data)}</td><td>${l.tipo}</td><td>${l.resp||'—'}</td><td style="color:${sc};font-weight:500">${l.status}</td><td style="white-space:pre-wrap">${l.desc}</td></tr>`;
-    }).join('');
-    body+=`
-  ${sec('Diário de bordo')}
-  <p style="font-size:11px;color:#9399bb;margin-bottom:8px">${logs.length} registro(s) · uso interno</p>
-  ${logs.length?`<table>
-    <thead><tr><th style="width:70px">Data</th><th style="width:110px">Tipo</th><th style="width:110px">Responsável</th><th style="width:90px">Status</th><th>Descrição</th></tr></thead>
-    <tbody>${logRows}</tbody>
-  </table>`:'<p style="font-size:12px;color:#9399bb">Nenhum registro no diário de bordo.</p>'}`;
-
-    body+=`
-  ${sec('Lições aprendidas')}
-  <p style="font-weight:bold;font-size:11px;margin-bottom:4px">Forças</p><pre style="margin-bottom:10px">${d.lForca||''}</pre>
-  <p style="font-weight:bold;font-size:11px;margin-bottom:4px">Desafios</p><pre style="margin-bottom:10px">${d.lDesaf||''}</pre>
-  <p style="font-weight:bold;font-size:11px;margin-bottom:4px">Recomendações</p><pre>${d.lRec||''}</pre>`;
-  }
-
-  body+=`<div class="footer">Cobli · Time de Implantação · Documento gerado automaticamente</div>`;
-
-  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${d.nome||'Implantação'} — ${isCliente?'Cliente':'Interno'}</title><style>${css}</style></head><body>${body}</body></html>`;
-
-  const suffix=isCliente?'_Cliente':'_Interno';
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
-  a.download=`${(d.nome||'Implantacao').replace(/\s+/g,'_')}${suffix}_PDF.html`;
-  a.click();
-  msg(isCliente?'PDF Cliente exportado! Sem custos e lições aprendidas.':'PDF Interno exportado com todas as informações.');
-}
-
-function calcDeviation(planEnd, execEnd){
-  if(!planEnd||!execEnd)return '-';
-  const p=new Date(planEnd+'T00:00:00'), ex=new Date(execEnd+'T00:00:00');
-  const diff=Math.round((ex-p)/864e5);
-  if(diff===0)return 'No prazo';
-  return diff>0?`+${diff}d atraso`:`${diff}d adiantado`;
-}
-
-function msg(t){const el=document.getElementById('smsg');el.textContent=t;setTimeout(()=>el.textContent='',4000);}
-
-document.addEventListener('change',()=>{setSaved('saving');clearTimeout(window._st);window._st=setTimeout(()=>setSaved('saved'),800);});
-
-document.getElementById('modal-input').addEventListener('keydown',ev=>{if(ev.key==='Enter')createProject();if(ev.key==='Escape')closeModal();});
-document.getElementById('modal-bg').addEventListener('click',ev=>{if(ev.target===document.getElementById('modal-bg'))closeModal();});
-
 /* ─── DIÁRIO DE BORDO ─── */
-function dkey(id){ return 'cobli_diario_'+id; }
-
-function loadDiario(){ 
-    return window._diarioLocal || []; 
-}
-  
-function saveDiario(logs){ 
-    window._diarioLocal = logs; 
-    persist(); 
-    setSaved('saved'); 
-}
-
-const TYPE_CLASS={
-  'Problema':'lt-problema','Visita':'lt-visita','Decisão':'lt-decisao',
-  'Contato com cliente':'lt-contato','Entrega':'lt-entrega','Outro':'lt-outro'
-};
+const TYPE_CLASS={'Problema':'lt-problema','Visita':'lt-visita','Decisão':'lt-decisao','Contato com cliente':'lt-contato','Entrega':'lt-entrega','Outro':'lt-outro'};
 const STATUS_CLASS={'Aberto':'ls-aberto','Em andamento':'ls-andamento','Resolvido':'ls-resolvido'};
+
+function saveDiario(logs){ window._diarioLocal = logs; persist(); }
 
 function toggleLogForm(){
   const form=document.getElementById('log-form');
   const showing=form.style.display!=='none';
   form.style.display=showing?'none':'block';
   if(!showing){
-    // set today as default
     document.getElementById('log-data').value=new Date().toISOString().slice(0,10);
     document.getElementById('log-desc').focus();
   }
@@ -1246,10 +1107,9 @@ function saveLog(){
   const status=document.getElementById('log-status').value;
   const desc=document.getElementById('log-desc').value.trim();
   if(!desc){ alert('Preencha a descrição do ocorrido.'); return; }
-  const logs=loadDiario();
+  const logs=window._diarioLocal || [];
   logs.unshift({id:uid(),data,tipo,resp,status,desc,criadoEm:new Date().toISOString()});
   saveDiario(logs);
-  // clear form
   document.getElementById('log-desc').value='';
   document.getElementById('log-status').value='Aberto';
   toggleLogForm();
@@ -1257,7 +1117,7 @@ function saveLog(){
 }
 
 function editLog(id){
-  const logs=loadDiario();
+  const logs=window._diarioLocal || [];
   const log=logs.find(l=>l.id===id);
   if(!log) return;
   document.getElementById('log-data').value=log.data||'';
@@ -1265,15 +1125,13 @@ function editLog(id){
   document.getElementById('log-resp').value=log.resp||'';
   document.getElementById('log-status').value=log.status||'Aberto';
   document.getElementById('log-desc').value=log.desc||'';
-  // show form
   document.getElementById('log-form').style.display='block';
-  // override save to update
   window._editingLogId=id;
   document.querySelector('#log-form .log-form-actions .log-btn:last-child').onclick=()=>updateLog(id);
 }
 
 function updateLog(id){
-  const logs=loadDiario();
+  const logs=window._diarioLocal || [];
   const idx=logs.findIndex(l=>l.id===id);
   if(idx<0) return;
   logs[idx]={
@@ -1288,31 +1146,29 @@ function updateLog(id){
   saveDiario(logs);
   document.getElementById('log-desc').value='';
   document.getElementById('log-form').style.display='none';
-  // restore save button
   document.querySelector('#log-form .log-form-actions .log-btn:last-child').onclick=saveLog;
   renderDiario();
 }
 
 function deleteLog(id){
   if(!confirm('Excluir este registro?')) return;
-  const logs=loadDiario().filter(l=>l.id!==id);
+  const logs=(window._diarioLocal || []).filter(l=>l.id!==id);
   saveDiario(logs);
   renderDiario();
 }
 
 function changeLogStatus(id, newStatus){
-  const logs=loadDiario();
+  const logs=window._diarioLocal || [];
   const log=logs.find(l=>l.id===id);
   if(log){ log.status=newStatus; saveDiario(logs); renderDiario(); }
 }
 
 function renderDiario(){
-  let logs=loadDiario();
+  let logs=window._diarioLocal || [];
   const filterTipo=document.getElementById('filter-tipo')?.value||'';
   const filterStatus=document.getElementById('filter-status')?.value||'';
   const search=(document.getElementById('filter-search')?.value||'').toLowerCase();
 
-  // stats
   const total=logs.length;
   const abertos=logs.filter(l=>l.status==='Aberto').length;
   const andamento=logs.filter(l=>l.status==='Em andamento').length;
@@ -1324,7 +1180,6 @@ function renderDiario(){
     <div class="log-stat"><span class="log-stat-num" style="color:#854F0B">${andamento}</span><span class="log-stat-label">em andamento</span></div>
     <div class="log-stat"><span class="log-stat-num" style="color:var(--green-dark)">${resolvidos}</span><span class="log-stat-label">resolvidos</span></div>`;
 
-  // apply filters
   if(filterTipo) logs=logs.filter(l=>l.tipo===filterTipo);
   if(filterStatus) logs=logs.filter(l=>l.status===filterStatus);
   if(search) logs=logs.filter(l=>(l.desc+l.resp+l.tipo+l.data).toLowerCase().includes(search));
@@ -1342,8 +1197,7 @@ function renderDiario(){
   listEl.innerHTML=logs.map(log=>{
     const tc=TYPE_CLASS[log.tipo]||'lt-outro';
     const sc=STATUS_CLASS[log.status]||'ls-aberto';
-    const statusOpts=['Aberto','Em andamento','Resolvido'].map(s=>
-      `<option value="${s}" ${log.status===s?'selected':''}>${s}</option>`).join('');
+    const statusOpts=['Aberto','Em andamento','Resolvido'].map(s=>`<option value="${s}" ${log.status===s?'selected':''}>${s}</option>`).join('');
     return `<div class="log-card">
       <div class="log-card-head">
         <span class="log-date">${fmtDate(log.data)}</span>
@@ -1365,15 +1219,6 @@ function renderDiario(){
 }
 
 /* ─── DASHBOARD ─── */
-function getProjectData(id){
-  let f={stk:[],bases:[],risks:[],costs:[],dados:{}};
-  let g={startDate:'',days:30,tasks:[]};
-  try{const s=localStorage.getItem(fkey(id));if(s)f=JSON.parse(s);}catch(e){}
-  try{const s=localStorage.getItem(gkey(id));if(s)g=JSON.parse(s);}catch(e){}
-  if(!f.costs)f.costs=[];if(!f.dados)f.dados={};if(!g.tasks)g.tasks=[];
-  return {f,g};
-}
-
 function projStatus(f,g){
   const tasks=g.tasks.filter(t=>t.type==='task');
   if(!tasks.length&&!f.dados.nome) return 'new';
@@ -1399,12 +1244,8 @@ function projProgress(g){
   return Math.round(tasks.filter(t=>t.status==='realizado').length/tasks.length*100);
 }
 
-function statusLabel(s){
-  return {ok:'Concluído',late:'Atrasado',risk:'Em risco',progress:'Em andamento',new:'Novo'}[s]||s;
-}
-function statusClass(s){
-  return {ok:'sp-ok',late:'sp-late',risk:'sp-risk',progress:'sp-ok',new:'sp-new'}[s]||'sp-new';
-}
+function statusLabel(s){ return {ok:'Concluído',late:'Atrasado',risk:'Em risco',progress:'Em andamento',new:'Novo'}[s]||s; }
+function statusClass(s){ return {ok:'sp-ok',late:'sp-late',risk:'sp-risk',progress:'sp-ok',new:'sp-new'}[s]||'sp-new'; }
 
 function updateDashFilter(){
   const sel=document.getElementById('dash-filter');
@@ -1413,7 +1254,7 @@ function updateDashFilter(){
     projects.map(p=>`<option value="${p.id}" ${p.id===cur?'selected':''}>${e(p.name)}</option>`).join('');
 }
 
-function renderDashboard(){
+async function renderDashboard(){
   updateDashFilter();
   const filter=document.getElementById('dash-filter').value;
   const list=filter==='all'?projects:projects.filter(p=>p.id===filter);
@@ -1423,9 +1264,18 @@ function renderDashboard(){
     return;
   }
 
-  const allData=list.map(p=>({p,...getProjectData(p.id)}));
+  // Busca dados de todos os projetos no Supabase para montar o dashboard
+  const { data } = await supabase.from('project_data').select('*');
+  
+  const allData=list.map(p=>{
+    const pd = data?.find(d => d.project_id === p.id);
+    return {
+      p,
+      f: pd?.form_json || {stk:[],bases:[],risks:[],costs:[],dados:{}},
+      g: pd?.gantt_json || {startDate:'',endDate:'',tasks:[]}
+    };
+  });
 
-  // KPIs consolidados
   const totalProj=allData.length;
   const lateCount=allData.filter(({f,g})=>projStatus(f,g)==='late').length;
   const riskCount=allData.filter(({f,g})=>projStatus(f,g)==='risk').length;
@@ -1459,7 +1309,6 @@ function renderDashboard(){
     </div>
   </div>`;
 
-  // Timeline de projetos
   html+=`<div class="dash-section-title">Cronograma — visão geral</div>
   <div class="gantt-dash">
     <div class="gantt-dash-head">
@@ -1509,7 +1358,6 @@ function renderDashboard(){
   }
   html+=`</div>`;
 
-  // Cards por projeto
   html+=`<div class="dash-section-title">Status por projeto</div><div class="proj-cards">`;
   allData.forEach(({p,f,g})=>{
     const status=projStatus(f,g);
@@ -1547,10 +1395,7 @@ function renderDashboard(){
   });
   html+=`</div>`;
 
-  // Financeiro consolidado
   html+=`<div class="dash-section-title">Financeiro consolidado</div><div class="fin-grid">`;
-
-  // Custos por categoria
   const catTotals={};
   allData.forEach(({f})=>f.costs.filter(c=>c.cat!=='Adesão').forEach(c=>{catTotals[c.cat]=(catTotals[c.cat]||0)+(parseFloat(c.val)||0);}));
   html+=`<div class="fin-card"><div class="fin-card-title">Custos por categoria</div>`;
@@ -1560,7 +1405,6 @@ function renderDashboard(){
   });
   html+=`<div class="fin-total"><span>Total custos</span><span>${brl(totalCustos)}</span></div></div>`;
 
-  // Por projeto
   html+=`<div class="fin-card"><div class="fin-card-title">Resultado por projeto</div>`;
   allData.forEach(({p,f})=>{
     const c=f.costs.filter(x=>x.cat!=='Adesão').reduce((s,x)=>s+(parseFloat(x.val)||0),0);
@@ -1568,10 +1412,8 @@ function renderDashboard(){
     const d=a-c;
     html+=`<div class="fin-row"><span class="fin-row-label" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e(p.name)}</span><span class="fin-row-val" style="color:${d>=0?'var(--green-dark)':'var(--red-dark)'}">${brl(d)}</span></div>`;
   });
-  html+=`<div class="fin-total"><span>${saldo>=0?'Saldo total':'Déficit total'}</span><span class="${saldo>=0?'green':'red'}">${brl(Math.abs(saldo))}</span></div></div>`;
-  html+=`</div>`;
+  html+=`<div class="fin-total"><span>${saldo>=0?'Saldo total':'Déficit total'}</span><span class="${saldo>=0?'green':'red'}">${brl(Math.abs(saldo))}</span></div></div></div>`;
 
-  // Métricas operacionais
   const metProjs=allData.filter(({f})=>f.dados.mTeste||f.dados.mVisitas||f.dados.mNst||f.dados.mNsc||f.dados.mTempo);
   if(metProjs.length){
     html+=`<div class="dash-section-title">Métricas operacionais</div><div class="metrics-grid">`;
@@ -1587,8 +1429,149 @@ function renderDashboard(){
   document.getElementById('dash-body').innerHTML=html;
 }
 
-/* ─── INIT ─── */
+/* ─── EXPORTS & LISTENERS ─── */
+function exportXLSX(){
+  const wb=XLSX.utils.book_new(),d=F.dados||{};
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Campo','Detalhe'],['Nome',d.nome],['Responsável',d.resp],['Patrocinador',d.pat],['Produto',d.prod],['Data início',d.data],['Prazo (dias)',d.prazo],['Objetivo',d.obj],['Critérios',d.crit],['Entregáveis',d.entrega]]),'Dados Chave');
+  const sr=[['Papel','Nome','Empresa','Telefone','E-mail']];F.stk.forEach(s=>sr.push([s.papel,s.nome,s.empresa,s.tel,s.email]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sr),'Stakeholders');
+  const mr=[['Informação/Assunto','Para quem','Quando','Como','Responsável']];F.matriz.forEach(m=>mr.push([m.assunto,m.para,m.quando,m.como,m.resp]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(mr),'Matriz de Comunicação');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Item','Valor'],['Total contratado',d.frTotal],['Cancelados',d.frCancel],['Finalizando',(parseFloat(d.frTotal)||0)-(parseFloat(d.frCancel)||0)],['Tipo/Modelo',d.frTipo],['Customizações',d.frCustom]]),'Frota');
+  const br2=[['ID','Endereço','Responsável','Contato','Veículos','Produto']];F.bases.forEach(b=>br2.push([b.id,b.end,b.resp,b.tel,b.veic,b.prod]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(br2),'Bases');
+  const rr=[['Tipo','Descrição','Impacto','Mitigação']];F.risks.forEach(r=>rr.push([r.tipo,r.desc,r.imp,r.mit]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rr),'Riscos');
+  const cr=[['Descrição','Categoria','Status','Valor (R$)','Data']];F.costs.forEach(c=>cr.push([c.desc,c.cat,c.status,c.val,c.data]));
+  const custos=F.costs.filter(c=>c.cat!=='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
+  const adesao=F.costs.filter(c=>c.cat==='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
+  cr.push(['','','','',''],['Total custos','','',custos,''],['Adesão','','',adesao,''],['Diferença','','',adesao-custos,'']);
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cr),'Custos');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Métrica','Resultado'],['Teste Cobli (%)',d.mTeste],['Visitas',d.mVisitas],['No-show técnico (%)',d.mNst],['No-show cliente (%)',d.mNsc],['Tempo médio',d.mTempo]]),'Métricas');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Seção','Conteúdo'],['Forças',d.lForca],['Desafios',d.lDesaf],['Recomendações',d.lRec]]),'Aprendizados');
+  const gr=[['Tarefa','Base','Início Planejado','Fim Planejado','Início Executado','Fim Executado','Status']];
+  G.tasks.forEach(t=>{
+    if(t.type==='phase'){gr.push([`— ${t.name}`,'','','','','','']);return;}
+    const late=t.execEnd&&t.planEnd&&t.execEnd>t.planEnd?'Atrasado':t.execEnd?'Concluído':'Em andamento';
+    gr.push([t.name,t.base,t.planStart,t.planEnd,t.execStart,t.execEnd,late]);
+  });
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(gr),'Cronograma');
+  XLSX.writeFile(wb,`${(d.nome||'Implantacao').replace(/\s+/g,'_')}.xlsx`);
+  msg('Excel exportado!');
+}
+
+function exportPDF(mode='interno'){
+  const isCliente = mode==='cliente';
+  const d=F.dados||{};
+  const custos=F.costs.filter(c=>c.cat!=='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
+  const adesao=F.costs.filter(c=>c.cat==='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
+  const dif=adesao-custos;
+  const stH=F.stk.map(s=>`<tr><td>${s.papel}</td><td>${s.nome}</td><td>${s.empresa}</td><td>${s.tel}</td><td>${s.email}</td></tr>`).join('');
+  const bH=F.bases.map(b=>`<tr><td>${b.id}</td><td>${b.end}</td><td>${b.resp}</td><td>${b.tel}</td><td>${b.veic}</td></tr>`).join('');
+  const rH=F.risks.map(r=>`<tr><td>${r.tipo}</td><td>${r.desc}</td><td>${r.imp}</td><td>${r.mit}</td></tr>`).join('');
+  const cH=F.costs.map(c=>`<tr><td>${c.desc}</td><td>${c.cat}</td><td>${c.status}</td><td style="text-align:right">${brl(c.val)}</td><td>${c.data}</td></tr>`).join('');
+
+  let ganttRows='';
+  G.tasks.forEach(t=>{
+    if(t.type==='phase'){
+      ganttRows+=`<tr><td colspan="6" style="background:#f0f2fa;font-weight:600;font-size:11px;color:#07074E;padding:5px 8px">${t.name}</td></tr>`;
+      return;
+    }
+    const late=t.execEnd&&t.planEnd&&t.execEnd>t.planEnd;
+    const done=!!t.execEnd;
+    const statusLbl=late?'Atrasado':done?'Concluído':'Em andamento';
+    const statusColor=late?'#cc3828':done?'#008a79':'#185FA5';
+    const fmtD=s=>s?s.split('-').reverse().join('/'):'-';
+    ganttRows+=`<tr>
+      <td style="padding-left:16px">${t.name}</td>
+      <td>${t.base||'-'}</td>
+      <td>${t.planStart&&t.planEnd?fmtD(t.planStart)+' → '+fmtD(t.planEnd):'-'}</td>
+      <td>${t.execStart&&t.execEnd?fmtD(t.execStart)+' → '+fmtD(t.execEnd):'-'}</td>
+      <td>${calcDeviation(t.planEnd,t.execEnd)}</td>
+      <td style="color:${statusColor};font-weight:500">${statusLbl}</td>
+    </tr>`;
+  });
+
+  let sn=1; const sec=title=>`<h2>${sn++}. ${title}</h2>`;
+  const css=`body{font-family:Arial,sans-serif;font-size:12px;color:#07074E;padding:32px;max-width:900px;margin:0 auto}
+    .hdr{display:flex;align-items:center;gap:10px;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #07074E}
+    .badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;margin-left:8px;vertical-align:middle}
+    .badge-interno{background:#faeeda;color:#633806}.badge-cliente{background:#E1F5EE;color:#085041}
+    h1{font-size:18px;margin-bottom:4px}
+    h2{font-size:13px;margin:20px 0 6px;border-bottom:1px solid #dde0ee;padding-bottom:4px;color:#07074E}
+    table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px}
+    th{background:#f0f2fa;text-align:left;padding:5px 8px;border:1px solid #dde0ee;font-size:10px}
+    td{padding:4px 8px;border:1px solid #dde0ee;vertical-align:top}
+    .kv{display:grid;grid-template-columns:160px 1fr;gap:3px 0;margin-bottom:10px}
+    .k{color:#5a6080;font-size:11px;padding:3px 0}.v{font-size:11px;padding:3px 0}
+    .totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+    .tc{padding:10px;border-radius:6px;border:1px solid #dde0ee}
+    .tc-label{font-size:10px;color:#9399bb;margin-bottom:3px}.tc-val{font-size:14px;font-weight:bold}
+    .tc.nav{background:#07074E}.tc.nav .tc-label{color:rgba(255,255,255,.55)}.tc.nav .tc-val{color:#fff}
+    .tc.pos{background:#E1F5EE}.tc.pos .tc-val{color:#008a79}
+    .tc.neg{background:#fff0ee}.tc.neg .tc-val{color:#cc3828}
+    pre{white-space:pre-wrap;font-family:Arial;font-size:11px}
+    .legend{display:flex;gap:16px;margin-bottom:8px;font-size:10px;color:#5a6080}
+    .leg-sq{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:3px;vertical-align:middle}
+    .footer{margin-top:32px;font-size:10px;color:#9399bb;border-top:1px solid #eef0f7;padding-top:8px;text-align:center}
+    @media print{body{padding:16px}}`;
+
+  const badge=isCliente?`<span class="badge badge-cliente">Documento Cliente</span>`:`<span class="badge badge-interno">Uso Interno</span>`;
+  let body=`<div class="hdr"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#001BB8"/><circle cx="16" cy="16" r="9" stroke="#fff" stroke-width="2" fill="none"/><circle cx="16" cy="16" r="3.5" fill="#fff"/></svg><div><div style="font-size:15px;font-weight:bold">Cobli · Implantação</div><div style="font-size:11px;color:#5a6080">Gerado em ${new Date().toLocaleDateString('pt-BR')}</div></div></div><h1>${d.nome||'Projeto de Implantação'} ${badge}</h1>
+  ${sec('Dados chave')}
+  <div class="kv"><div class="k">Responsável</div><div class="v">${d.resp||''}</div><div class="k">Patrocinador</div><div class="v">${d.pat||''}</div><div class="k">Produto</div><div class="v">${d.prod||''}</div><div class="k">Data início</div><div class="v">${d.data||''}</div><div class="k">Prazo</div><div class="v">${d.prazo||''} dias</div><div class="k">Objetivo</div><div class="v"><pre>${d.obj||''}</pre></div><div class="k">Critérios de sucesso</div><div class="v">${d.crit||''}</div></div>
+  ${sec('Partes interessadas')}
+  <table><thead><tr><th>Papel</th><th>Nome</th><th>Empresa</th><th>Telefone</th><th>E-mail</th></tr></thead><tbody>${stH}</tbody></table>
+  <h3 style="font-size:12px;font-weight:600;color:#07074E;margin:12px 0 6px">2.1 Matriz de comunicação</h3>
+  <table><thead><tr><th>Informação / Assunto</th><th>Para quem</th><th>Quando</th><th>Como</th><th>Responsável</th></tr></thead><tbody>${F.matriz.map(m=>`<tr><td>${m.assunto||''}</td><td>${m.para||''}</td><td>${m.quando||''}</td><td>${m.como||''}</td><td>${m.resp||''}</td></tr>`).join('')}</tbody></table>
+  ${sec('Levantamento da frota')}
+  <div class="kv"><div class="k">Total contratado</div><div class="v">${d.frTotal||''}</div><div class="k">Cancelados</div><div class="v">${d.frCancel||''}</div><div class="k">Finalizando</div><div class="v">${(parseFloat(d.frTotal)||0)-(parseFloat(d.frCancel)||0)}</div><div class="k">Tipo/Modelo</div><div class="v">${d.frTipo||''}</div><div class="k">Customizações</div><div class="v"><pre>${d.frCustom||''}</pre></div></div>
+  ${sec('Bases de operação e instalação')}
+  <table><thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Veículos</th></tr></thead><tbody>${bH}</tbody></table>
+  ${sec('Gestão de riscos e premissas')}
+  <table><thead><tr><th>Tipo</th><th>Descrição</th><th>Impacto</th><th>Mitigação</th></tr></thead><tbody>${rH}</tbody></table>
+  ${sec('Cronograma — Planejado vs. Executado')}
+  <div class="legend"><span><span class="leg-sq" style="background:#001BB820;border:1px solid #001BB8"></span>Planejado</span><span><span class="leg-sq" style="background:#E1F5EE;border:1px solid #00AE97"></span>Executado no prazo</span><span><span class="leg-sq" style="background:#fff0ee;border:1px solid #FF4633"></span>Executado com atraso</span></div>
+  <table><thead><tr><th>Tarefa</th><th>Base</th><th>Período planejado</th><th>Período executado</th><th>Desvio</th><th>Status</th></tr></thead><tbody>${ganttRows}</tbody></table>`;
+
+  if(!isCliente){
+    body+=`${sec('Custos da implantação')}<table><thead><tr><th>Descrição</th><th>Categoria</th><th>Status</th><th style="text-align:right">Valor</th><th>Data</th></tr></thead><tbody>${cH}</tbody></table><div class="totals"><div class="tc"><div class="tc-label">Total custos</div><div class="tc-val">${brl(custos)}</div></div><div class="tc nav"><div class="tc-label">Valor de adesão</div><div class="tc-val">${brl(adesao)}</div></div><div class="tc ${dif>=0?'pos':'neg'}"><div class="tc-label">${dif>=0?'Saldo positivo':'Déficit'}</div><div class="tc-val">${brl(Math.abs(dif))}</div></div></div>`;
+  }
+
+  body+=`${sec('Métricas de resultado')}<div class="kv"><div class="k">Teste Cobli instalador</div><div class="v">${d.mTeste||''}%</div><div class="k">Qtd. de visitas</div><div class="v">${d.mVisitas||''}</div><div class="k">No-show técnico</div><div class="v">${d.mNst||''}%</div><div class="k">No-show cliente</div><div class="v">${d.mNsc||''}%</div><div class="k">Tempo médio instalação</div><div class="v">${d.mTempo||''}</div></div>`;
+
+  if(!isCliente){
+    const logs=window._diarioLocal || [];
+    const fmtD2=s=>{if(!s)return '—';const[y,m,d]=s.split('-');return `${d}/${m}/${y}`;};
+    const logRows=logs.map(l=>{
+      const sc=l.status==='Resolvido'?'#008a79':l.status==='Em andamento'?'#854F0B':'#cc3828';
+      return `<tr><td>${fmtD2(l.data)}</td><td>${l.tipo}</td><td>${l.resp||'—'}</td><td style="color:${sc};font-weight:500">${l.status}</td><td style="white-space:pre-wrap">${l.desc}</td></tr>`;
+    }).join('');
+    body+=`${sec('Diário de bordo')}<p style="font-size:11px;color:#9399bb;margin-bottom:8px">${logs.length} registro(s) · uso interno</p>${logs.length?`<table><thead><tr><th style="width:70px">Data</th><th style="width:110px">Tipo</th><th style="width:110px">Responsável</th><th style="width:90px">Status</th><th>Descrição</th></tr></thead><tbody>${logRows}</tbody></table>`:'<p style="font-size:12px;color:#9399bb">Nenhum registro no diário de bordo.</p>'}`;
+    body+=`${sec('Lições aprendidas')}<p style="font-weight:bold;font-size:11px;margin-bottom:4px">Forças</p><pre style="margin-bottom:10px">${d.lForca||''}</pre><p style="font-weight:bold;font-size:11px;margin-bottom:4px">Desafios</p><pre style="margin-bottom:10px">${d.lDesaf||''}</pre><p style="font-weight:bold;font-size:11px;margin-bottom:4px">Recomendações</p><pre>${d.lRec||''}</pre>`;
+  }
+
+  body+=`<div class="footer">Cobli · Time de Implantação · Documento gerado automaticamente</div>`;
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${d.nome||'Implantação'} — ${isCliente?'Cliente':'Interno'}</title><style>${css}</style></head><body>${body}</body></html>`;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download=`${(d.nome||'Implantacao').replace(/\s+/g,'_')}${isCliente?'_Cliente':'_Interno'}_PDF.html`;
+  a.click();
+  msg(isCliente?'PDF Cliente exportado! Sem custos e lições aprendidas.':'PDF Interno exportado com todas as informações.');
+}
+
+function calcDeviation(planEnd, execEnd){
+  if(!planEnd||!execEnd)return '-';
+  const p=new Date(planEnd+'T00:00:00'), ex=new Date(execEnd+'T00:00:00');
+  const diff=Math.round((ex-p)/864e5);
+  if(diff===0)return 'No prazo';
+  return diff>0?`+${diff}d atraso`:`${diff}d adiantado`;
+}
+
+function msg(t){const el=document.getElementById('smsg');el.textContent=t;setTimeout(()=>el.textContent='',4000);}
+
+document.getElementById('modal-input').addEventListener('keydown',ev=>{if(ev.key==='Enter')createProject();if(ev.key==='Escape')closeModal();});
+document.getElementById('modal-bg').addEventListener('click',ev=>{if(ev.target===document.getElementById('modal-bg'))closeModal();});
+
+/* ─── BOOT ─── */
 init();
-</script>
-</body>
-</html>
