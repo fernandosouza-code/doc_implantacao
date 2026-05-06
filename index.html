@@ -717,21 +717,40 @@ async function loadProjects() {
 }
 
 async function switchProject(id) {
-  currentId = id;
-  setSaved('saving');
-  
-  const { data } = await supa.from('project_data').select('*').eq('project_id', id).single();
+  currentId = id;
+  setSaved('saving');
+  
+  const { data } = await supa.from('project_data').select('*').eq('project_id', id).single();
   const project = projects.find(p => p.id === id);
 
-  if (data) {
-    F = data.form_json || {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
-    G = data.gantt_json || {startDate:'',endDate:'',tasks:[]};
-    window._diarioLocal = data.diario_json || []; 
-  } else {
-    F = {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
-    G = {startDate:'',endDate:'',tasks:[]};
-    window._diarioLocal = [];
-  }
+  F = data?.form_json || {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
+  G = data?.gantt_json || {startDate:'',endDate:'',tasks:[]};
+  window._diarioLocal = data?.diario_json || [];
+
+  const isOwner = project.owner_id === currentUser.id;
+  const isGestor = userProfile?.role === 'gestor';
+  
+  // CRIAMOS ESTA VARIÁVEL GLOBAL DE CONTROLE
+  window.canEditCurrent = isOwner || isGestor;
+
+  renderProjBar();
+  syncFormFields(); // Esta chama os renders das tabelas
+  loadG();          // Esta chama o render do Gantt
+  
+  // BLOQUEIO ADICIONAL PARA CAMPOS FIXOS
+  const selectors = '#tab-form input, #tab-form textarea, #tab-form select, #tab-gantt input';
+  document.querySelectorAll(selectors).forEach(el => el.disabled = !window.canEditCurrent);
+
+  // ESCONDE BOTÕES DE "ADICIONAR" NAS ABAS PROTEGIDAS
+  document.querySelectorAll('#tab-form .add-row, #tab-gantt .btn-ghost').forEach(btn => {
+      btn.style.display = window.canEditCurrent ? 'block' : 'none';
+  });
+
+  document.getElementById('readonly-warning').style.display = window.canEditCurrent ? 'none' : 'block';
+  document.getElementById('btn-delete-proj').style.display = window.canEditCurrent ? 'block' : 'none';
+
+  setSaved('saved');
+}
 
   // VERIFICAÇÃO DE PERMISSÕES
   const isOwner = project.owner_id === currentUser.id;
@@ -1018,70 +1037,66 @@ function calcFinal(){
   const el=document.getElementById('fr-final'); if(el)el.value=t-c;
 }
 
-function renderStk(){
-  document.getElementById('st-body').innerHTML=F.stk.map((s,i)=>`<tr>
-    <td><input value="${e(s.papel)}" onchange="F.stk[${i}].papel=this.value;saveF()"></td>
-    <td><input value="${e(s.nome)}" onchange="F.stk[${i}].nome=this.value;saveF()"></td>
-    <td><input value="${e(s.empresa)}" onchange="F.stk[${i}].empresa=this.value;saveF()"></td>
-    <td><input value="${e(s.tel)}" onchange="F.stk[${i}].tel=this.value;saveF()"></td>
-    <td><input value="${e(s.email)}" onchange="F.stk[${i}].email=this.value;saveF()"></td>
-    <td><button class="del-btn" onclick="F.stk.splice(${i},1);saveF();renderStk()">×</button></td>
-  </tr>`).join('');
+function renderStk(){ 
+    const html = F.stk.map((s,i)=>`<tr>
+        <td><input value="${e(s.papel)}" onchange="F.stk[${i}].papel=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(s.nome)}" onchange="F.stk[${i}].nome=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(s.empresa)}" onchange="F.stk[${i}].empresa=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(s.tel)}" onchange="F.stk[${i}].tel=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(s.email)}" onchange="F.stk[${i}].email=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td>${window.canEditCurrent ? `<button class="del-btn" onclick="F.stk.splice(${i},1);saveF();renderStk()">×</button>` : ''}</td>
+    </tr>`).join('');
+    document.getElementById('st-body').innerHTML = html;
 }
-function addStk(){F.stk.push({papel:'',nome:'',empresa:'',tel:'',email:''});saveF();renderStk();}
 
-function renderMatriz(){
-  document.getElementById('matriz-body').innerHTML=F.matriz.map((m,i)=>`<tr>
-    <td><input value="${e(m.assunto)}" onchange="F.matriz[${i}].assunto=this.value;saveF()" placeholder="Ex: Status diário"></td>
-    <td><input value="${e(m.para)}" onchange="F.matriz[${i}].para=this.value;saveF()" placeholder="Ex: Gabriel Ramires"></td>
-    <td><input value="${e(m.quando)}" onchange="F.matriz[${i}].quando=this.value;saveF()" placeholder="Ex: Diário"></td>
-    <td><input value="${e(m.como)}" onchange="F.matriz[${i}].como=this.value;saveF()" placeholder="Ex: Grupo WhatsApp"></td>
-    <td><input value="${e(m.resp)}" onchange="F.matriz[${i}].resp=this.value;saveF()" placeholder="Ex: Líder do projeto"></td>
-    <td><button class="del-btn" onclick="F.matriz.splice(${i},1);saveF();renderMatriz()">×</button></td>
-  </tr>`).join('');
+function renderMatriz(){ 
+    const html = F.matriz.map((m,i)=>`<tr>
+        <td><input value="${e(m.assunto)}" onchange="F.matriz[${i}].assunto=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(m.para)}" onchange="F.matriz[${i}].para=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(m.quando)}" onchange="F.matriz[${i}].quando=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(m.como)}" onchange="F.matriz[${i}].como=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(m.resp)}" onchange="F.matriz[${i}].resp=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td>${window.canEditCurrent ? `<button class="del-btn" onclick="F.matriz.splice(${i},1);saveF();renderMatriz()">×</button>` : ''}</td>
+    </tr>`).join('');
+    document.getElementById('matriz-body').innerHTML = html;
 }
-function addMatriz(){F.matriz.push({assunto:'',para:'',quando:'',como:'',resp:''});saveF();renderMatriz();}
 
-function renderBases(){
-  document.getElementById('base-body').innerHTML=F.bases.map((b,i)=>`<tr>
-    <td><input value="${e(b.id)}" onchange="F.bases[${i}].id=this.value;saveF()"></td>
-    <td><input value="${e(b.end)}" onchange="F.bases[${i}].end=this.value;saveF()"></td>
-    <td><input value="${e(b.resp)}" onchange="F.bases[${i}].resp=this.value;saveF()"></td>
-    <td><input value="${e(b.tel)}" onchange="F.bases[${i}].tel=this.value;saveF()"></td>
-    <td><input type="number" value="${e(b.veic)}" onchange="F.bases[${i}].veic=this.value;saveF()" style="width:60px"></td>
-    <td><input value="${e(b.prod)}" onchange="F.bases[${i}].prod=this.value;saveF()"></td>
-    <td><button class="del-btn" onclick="F.bases.splice(${i},1);saveF();renderBases()">×</button></td>
-  </tr>`).join('');
+function renderBases(){ 
+    const html = F.bases.map((b,i)=>`<tr>
+        <td><input value="${e(b.id)}" onchange="F.bases[${i}].id=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(b.end)}" onchange="F.bases[${i}].end=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(b.resp)}" onchange="F.bases[${i}].resp=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(b.tel)}" onchange="F.bases[${i}].tel=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input type="number" value="${b.veic}" onchange="F.bases[${i}].veic=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td>${window.canEditCurrent ? `<button class="del-btn" onclick="F.bases.splice(${i},1);saveF();renderBases()">×</button>` : ''}</td>
+    </tr>`).join('');
+    document.getElementById('base-body').innerHTML = html;
 }
-function addBase(){F.bases.push({id:'',end:'',resp:'',tel:'',veic:'',prod:''});saveF();renderBases();}
 
-function renderRisks(){
-  document.getElementById('risk-body').innerHTML=F.risks.map((r,i)=>`<tr>
-    <td><select onchange="F.risks[${i}].tipo=this.value;saveF()" style="width:85px">
-      <option ${r.tipo==='Risco'?'selected':''}>Risco</option>
-      <option ${r.tipo==='Premissa'?'selected':''}>Premissa</option>
-    </select></td>
-    <td><input value="${e(r.desc)}" onchange="F.risks[${i}].desc=this.value;saveF()"></td>
-    <td><input value="${e(r.imp)}" onchange="F.risks[${i}].imp=this.value;saveF()"></td>
-    <td><input value="${e(r.mit)}" onchange="F.risks[${i}].mit=this.value;saveF()"></td>
-    <td><button class="del-btn" onclick="F.risks.splice(${i},1);saveF();renderRisks()">×</button></td>
-  </tr>`).join('');
+function renderRisks(){ 
+    const html = F.risks.map((r,i)=>`<tr>
+        <td><select onchange="F.risks[${i}].tipo=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}>
+            <option ${r.tipo==='Risco'?'selected':''}>Risco</option>
+            <option ${r.tipo==='Premissa'?'selected':''}>Premissa</option>
+        </select></td>
+        <td><input value="${e(r.desc)}" onchange="F.risks[${i}].desc=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(r.imp)}" onchange="F.risks[${i}].imp=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(r.mit)}" onchange="F.risks[${i}].mit=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td>${window.canEditCurrent ? `<button class="del-btn" onclick="F.risks.splice(${i},1);saveF();renderRisks()">×</button>` : ''}</td>
+    </tr>`).join('');
+    document.getElementById('risk-body').innerHTML = html;
 }
-function addRisk(){F.risks.push({tipo:'Risco',desc:'',imp:'',mit:''});saveF();renderRisks();}
 
 function renderCosts(){
-  document.getElementById('cost-body').innerHTML=F.costs.map((c,i)=>{
-    const catOpts=CATS.map(ct=>`<option value="${ct}" ${c.cat===ct?'selected':''}>${ct}</option>`).join('');
-    const stOpts=STATS.map(st=>`<option value="${st}" ${c.status===st?'selected':''}>${st}</option>`).join('');
-    return `<tr style="${c.cat==='Adesão'?'background:var(--green10)':''}">
-      <td><input value="${e(c.desc)}" onchange="F.costs[${i}].desc=this.value;saveF();calcCosts()" placeholder="Ex: Prestador JTK"></td>
-      <td><select onchange="F.costs[${i}].cat=this.value;saveF();renderCosts()">${catOpts}</select></td>
-      <td><select onchange="F.costs[${i}].status=this.value;saveF();renderCosts()">${stOpts}</select></td>
-      <td><input type="number" value="${c.val||''}" onchange="F.costs[${i}].val=parseFloat(this.value)||0;saveF();calcCosts()" style="text-align:right"></td>
-      <td><input type="date" value="${e(c.data)}" onchange="F.costs[${i}].data=this.value;saveF()" style="font-size:11px;padding:4px 6px"></td>
-      <td><button class="del-btn" onclick="F.costs.splice(${i},1);saveF();renderCosts()">×</button></td>
-    </tr>`;
-  }).join('');
+  const html = F.costs.map((c,i)=>`<tr>
+      <td><input value="${e(c.desc)}" onchange="F.costs[${i}].desc=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+      <td><select onchange="F.costs[${i}].cat=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}>${CATS.map(ct=>`<option ${c.cat===ct?'selected':''}>${ct}</option>`).join('')}</select></td>
+      <td><select onchange="F.costs[${i}].status=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}>${STATS.map(st=>`<option ${c.status===st?'selected':''}>${st}</option>`).join('')}</select></td>
+      <td><input type="number" value="${c.val}" onchange="F.costs[${i}].val=parseFloat(this.value)||0;saveF();calcCosts()" ${!window.canEditCurrent?'disabled':''}></td>
+      <td><input type="date" value="${c.data}" onchange="F.costs[${i}].data=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+      <td>${window.canEditCurrent ? `<button class="del-btn" onclick="F.costs.splice(${i},1);saveF();renderCosts()">×</button>` : ''}</td>
+  </tr>`).join('');
+  document.getElementById('cost-body').innerHTML = html;
   calcCosts();
 }
 function addCost(){F.costs.push({desc:'',cat:'Prestador',status:'Pendente',val:0,data:''});saveF();renderCosts();}
@@ -1151,16 +1166,34 @@ function dateToIdx(days,dateStr){
 function isWk(d){return d.getDay()===0||d.getDay()===6;}
 const CELL=26,LCOL=220;
 
-function renderG(){
-  if(!G.startDate||!G.endDate){ document.getElementById('gw').innerHTML=`<div class="gantt-empty"><p>Defina as datas de início e fim do projeto no topo.</p></div>`; return; }
-  const days=gdays();
-  if(!days.length){ document.getElementById('gw').innerHTML=`<div class="gantt-empty"><p>Data de fim deve ser posterior ao início.</p></div>`; return; }
-  const toff=todayOff(days);
-
-  if(!G.tasks.length){
-    document.getElementById('gw').innerHTML=`<div class="gantt-empty"><p>Nenhuma fase ainda.</p><button class="btn-ghost" onclick="addPhase()">+ adicionar primeira fase</button></div>`;
-    return;
-  }
+function renderG(){ 
+  const days = []; const s = new Date(G.startDate+'T00:00:00'); const en = new Date(G.endDate+'T00:00:00');
+  if(!G.startDate || isNaN(s)) { document.getElementById('gw').innerHTML="<div class='gantt-empty'>Defina as datas.</div>"; return; }
+  for(let d=new Date(s); d<=en; d.setDate(d.getDate()+1)) days.push(new Date(d));
+  
+  let html = `<table class="itbl"><thead><tr><th>Tarefa</th>${days.map(d=>`<th>${d.getDate()}</th>`).join('')}</tr></thead><tbody>`;
+  
+  G.tasks.forEach((t,ti)=>{
+    if(t.type==='phase') {
+        html += `<tr style="background:var(--gray50)">
+            <td>
+                <b>${t.name}</b> 
+                ${window.canEditCurrent ? `<button onclick="addTaskAfter(${ti})" style="padding:0 4px; font-size:10px">+</button>` : ''}
+            </td>
+            <td colspan="${days.length}"></td>
+        </tr>`;
+    } else {
+        html += `<tr>
+            <td style="padding-left:15px">
+                ${t.name} 
+                ${window.canEditCurrent ? `<button onclick="delGItem(${ti})" style="color:var(--red); border:none; background:none; cursor:pointer">×</button>` : ''}
+            </td>
+            <td colspan="${days.length}"></td>
+        </tr>`;
+    }
+  });
+  document.getElementById('gw').innerHTML = html + "</tbody></table>";
+}
 
   const months={};
   days.forEach(d=>{const k=d.getFullYear()+'-'+d.getMonth();if(!months[k])months[k]={label:d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}),cnt:0};months[k].cnt++;});
