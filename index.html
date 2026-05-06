@@ -676,12 +676,18 @@ let G = {startDate:'',endDate:'',tasks:[]};
 window._diarioLocal = [];
 
 /* ─── AUTENTICAÇÃO E INICIALIZAÇÃO ─── */
-/* ─── AUTENTICAÇÃO E INICIALIZAÇÃO ─── */
 async function init() {
+  // FREIO DE MÃO: Se o link tiver "recovery" (recuperação), trava na tela de nova senha!
+  if (window.location.hash.includes('type=recovery')) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'none';
+    document.getElementById('recovery-screen').style.display = 'flex';
+    return; // Para o código aqui e não carrega o painel de projetos
+  }
+
   const { data: { session } } = await supa.auth.getSession();
   
   if (session) {
-    // SE ESTIVER LOGADO -> MOSTRA O APP
     currentUser = session.user;
     const { data: profile } = await supa.from('profiles').select('*').eq('id', currentUser.id).single();
     userProfile = profile;
@@ -694,7 +700,6 @@ async function init() {
     await loadProjects();
     if (projects.length > 0) await switchProject(projects[0].id);
   } else {
-    // SE NÃO ESTIVER LOGADO -> AÍ SIM MOSTRA A TELA DE LOGIN
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('main-app').style.display = 'none';
   }
