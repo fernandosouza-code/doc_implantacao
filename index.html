@@ -314,21 +314,8 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 </head>
 <body>
 
-<div id="login-screen" class="auth-overlay">
-  <div class="auth-box">
-    <div style="text-align:center; margin-bottom:20px">
-      <svg width="40" height="40" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="#001BB8"/><circle cx="8" cy="8" r="5" stroke="#fff" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>
-    </div>
-    <h2 id="auth-title" style="margin-bottom:10px; color:var(--navy)">Entrar no Cobli</h2>
-    <p id="auth-subtitle" style="font-size:12px;color:var(--text2);margin-bottom:20px">Digite seu acesso para continuar</p>    
-    <label style="font-size:11px;font-weight:500;color:var(--text2)">E-mail</label>
-    <input type="email" id="auth-email" class="auth-input" placeholder="seu@email.com">  
-    <label style="font-size:11px;font-weight:500;color:var(--text2)">Senha</label>
-    <input type="password" id="auth-password" class="auth-input" placeholder="••••••••">   
-    <button class="auth-btn" onclick="handleAuth()">Entrar</button>
-    <button class="auth-btn secondary" id="auth-toggle-btn" onclick="toggleAuthMode()">Não tem conta? Criar agora</button>
-    <div id="auth-error" style="color:var(--red);font-size:11px;margin-top:10px;text-align:center"></div>
-  </div>
+<body>
+
 <div id="login-screen" class="auth-overlay">
   <div class="auth-box">
     <div style="text-align:center; margin-bottom:20px">
@@ -357,7 +344,6 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
     <button class="auth-btn" onclick="saveNewPassword()" style="background:var(--green); color:#fff">Salvar Senha</button>
   </div>
 </div>
-  </div>
 <div class="app" id="main-app">
   
   <div id="readonly-warning" class="readonly-notice">MODO LEITURA: Apenas o dono do projeto ou gestores podem alterar estes dados.</div>
