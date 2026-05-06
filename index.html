@@ -989,12 +989,18 @@ function closeModal(){
 
 function renderProjBar(){
   const bar = document.getElementById('proj-bar');
-  let html = projects.map(p => `
+  let html = projects.map(p => {
+    // Verifica se o usuário atual é gestor ou se ele é o dono específico DESTE projeto
+    const canEditTab = (userProfile?.role === 'gestor') || (currentUser && p.owner_id === currentUser.id);
+    
+    return `
     <div class="proj-tab ${p.id===currentId?'active':''}" onclick="switchProject('${p.id}')" id="ptab-${p.id}">
       <span class="proj-name-label">${e(p.name)}</span>
-      <button class="proj-edit" onclick="renameProject('${p.id}',event)" title="Renomear">✎</button>
-      ${projects.length>1 ? `<span class="proj-close" onclick="confirmDelete('${p.id}',event)">×</span>` : ''}
-    </div>`).join('');
+      ${canEditTab ? `<button class="proj-edit" onclick="renameProject('${p.id}',event)" title="Renomear">✎</button>` : ''}
+      ${(projects.length > 1 && canEditTab) ? `<span class="proj-close" onclick="confirmDelete('${p.id}',event)">×</span>` : ''}
+    </div>`;
+  }).join('');
+  
   html += `<button class="btn-new-proj" onclick="openNewModal()">+ novo cliente</button>`;
   bar.innerHTML = html;
 }
