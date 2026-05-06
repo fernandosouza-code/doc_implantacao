@@ -328,21 +328,21 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 <div class="app" id="main-app">
   
   <div id="readonly-warning" class="readonly-notice">MODO LEITURA: Apenas o dono do projeto ou gestores podem alterar estes dados.</div>
-  <div class="topnav">
-    <div class="nav-brand">
-      <div class="nav-logo">
-        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5" stroke="#fff" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>
-      </div>
-      <span class="nav-title">Cobli</span>
-      <span class="nav-sub">Time de Implantação</span>
+  <div class="topnav">
+    <div class="nav-brand">
+      <div class="nav-logo">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5" stroke="#fff" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>
+      </div>
+      <span class="nav-title">Cobli</span>
+      <span class="nav-sub">Time de Implantação</span>
       <span id="user-role-badge" class="user-badge"></span>
-    </div>
-    <div class="nav-right">
+    </div>
+    <div class="nav-right">
       <button id="btn-gestao-usuarios" class="btn-nav-action" style="display:none" onclick="openUserModal()">⚙️ Usuários</button>
-      <div class="save-pill" id="save-status">Salvo</div>
+      <div class="save-pill" id="save-status">Salvo</div>
       <button class="btn-nav-action" style="border-color:rgba(255,255,255,0.2)" onclick="handleLogout()">Sair</button>
-    </div>
-  </div>
+    </div>
+  </div>
 
   <div class="proj-bar" id="proj-bar">
     <button class="btn-new-proj" onclick="openNewModal()">+ novo cliente</button>
@@ -765,12 +765,12 @@ async function persist() {
 }
 
 async function createProject() {
-  const name = document.getElementById('modal-input').value.trim();
-  if (!name) return;
+  const name = document.getElementById('modal-input').value.trim();
+  if (!name) return;
 
   // ADICIONADO owner_id AQUI:
-  const { data, error } = await supa.from('projects').insert([{ name, owner_id: currentUser.id }]).select();
-  if (!error && data.length > 0) {
+  const { data, error } = await supa.from('projects').insert([{ name, owner_id: currentUser.id }]).select();
+  if (!error && data.length > 0) {
     const newProj = data[0];
     await supa.from('project_data').insert([{ project_id: newProj.id }]);
     await loadProjects();
