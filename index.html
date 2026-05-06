@@ -915,7 +915,9 @@ async function updateUserRole(uid, role) {
 }
 
 function resetPass(email) { 
-  supa.auth.resetPasswordForEmail(email); 
+  supa.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://luizlackeski.github.io/cobli-implantacao/'
+  }); 
   alert("Link de recuperação enviado para " + email); 
 }
 
