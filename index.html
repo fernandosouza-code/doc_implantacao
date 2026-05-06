@@ -1117,6 +1117,10 @@ function renderCosts(){
   document.getElementById('cost-body').innerHTML = html;
   calcCosts();
 }
+function addStk() { F.stk.push({papel:'',nome:'',empresa:'',tel:'',email:''}); saveF(); renderStk(); }
+function addMatriz() { F.matriz.push({assunto:'',para:'',quando:'',como:'',resp:''}); saveF(); renderMatriz(); }
+function addBase() { F.bases.push({id:'',end:'',resp:'',tel:'',veic:0}); saveF(); renderBases(); }
+function addRisk() { F.risks.push({tipo:'Risco',desc:'',imp:'',mit:''}); saveF(); renderRisks(); }
 function addCost(){F.costs.push({desc:'',cat:'Prestador',status:'Pendente',val:0,data:''});saveF();renderCosts();}
 function calcCosts(){
   const custos=F.costs.filter(c=>c.cat!=='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
