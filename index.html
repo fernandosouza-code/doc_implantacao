@@ -18,7 +18,20 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{font-family:'DM Sans',sans-serif;background:#f0f2fa;color:var(--text);display:flex;flex-direction:column;height:100vh;overflow:hidden}
-.app{display:flex;flex-direction:column;height:100vh}
+  
+.app{display:none;flex-direction:column;height:100vh}
+
+/* TELA DE LOGIN E PERMISSÕES */
+.auth-overlay{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center}
+.auth-box{background:#fff;padding:32px;border-radius:var(--radius-lg);width:340px;box-shadow:0 15px 35px rgba(0,0,0,0.3)}
+.auth-input{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:10px;border:1px solid var(--gray200);border-radius:var(--radius);margin-bottom:12px}
+.auth-btn{width:100%;font-family:'DM Sans',sans-serif;font-weight:600;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;margin-bottom:8px}
+.auth-btn.secondary{background:none;color:var(--text2);font-size:11px;border:none}
+.user-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.15);color:#fff;text-transform:uppercase;margin-left:8px}
+.btn-nav-action{background:none;border:1px solid rgba(255,255,255,0.2);color:#fff;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit}
+.btn-nav-action:hover{background:rgba(255,255,255,0.1)}
+.readonly-notice{background:#FF463315;color:var(--red-dark);padding:10px 24px;text-align:center;font-size:12px;font-weight:600;display:none}
+.user-row{display:grid;grid-template-columns:1fr 100px 90px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray100)}
 
 /* NAV */
 .topnav{background:var(--navy);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px}
@@ -294,20 +307,42 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 </style>
 </head>
 <body>
-<div class="app">
 
-  <div class="topnav">
-    <div class="nav-brand">
-      <div class="nav-logo">
-        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5" stroke="#fff" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>
-      </div>
-      <span class="nav-title">Cobli</span>
-      <span class="nav-sub">Time de Implantação</span>
+<div id="login-screen" class="auth-overlay">
+  <div class="auth-box">
+    <div style="text-align:center; margin-bottom:20px">
+      <svg width="40" height="40" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="#001BB8"/><circle cx="8" cy="8" r="5" stroke="#fff" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>
     </div>
-    <div class="nav-right">
-      <div class="save-pill" id="save-status">Salvo</div>
-    </div>
+    <h2 id="auth-title" style="margin-bottom:10px; color:var(--navy)">Entrar no Cobli</h2>
+    <p id="auth-subtitle" style="font-size:12px;color:var(--text2);margin-bottom:20px">Digite seu acesso para continuar</p>    
+    <label style="font-size:11px;font-weight:500;color:var(--text2)">E-mail</label>
+    <input type="email" id="auth-email" class="auth-input" placeholder="seu@email.com">  
+    <label style="font-size:11px;font-weight:500;color:var(--text2)">Senha</label>
+    <input type="password" id="auth-password" class="auth-input" placeholder="••••••••">   
+    <button class="auth-btn" onclick="handleAuth()">Entrar</button>
+    <button class="auth-btn secondary" id="auth-toggle-btn" onclick="toggleAuthMode()">Não tem conta? Criar agora</button>
+    <div id="auth-error" style="color:var(--red);font-size:11px;margin-top:10px;text-align:center"></div>
   </div>
+</div>
+
+<div class="app" id="main-app">
+  
+  <div id="readonly-warning" class="readonly-notice">MODO LEITURA: Apenas o dono do projeto ou gestores podem alterar estes dados.</div>
+  <div class="topnav">
+    <div class="nav-brand">
+      <div class="nav-logo">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5" stroke="#fff" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>
+      </div>
+      <span class="nav-title">Cobli</span>
+      <span class="nav-sub">Time de Implantação</span>
+      <span id="user-role-badge" class="user-badge"></span>
+    </div>
+    <div class="nav-right">
+      <button id="btn-gestao-usuarios" class="btn-nav-action" style="display:none" onclick="openUserModal()">⚙️ Usuários</button>
+      <div class="save-pill" id="save-status">Salvo</div>
+      <button class="btn-nav-action" style="border-color:rgba(255,255,255,0.2)" onclick="handleLogout()">Sair</button>
+    </div>
+  </div>
 
   <div class="proj-bar" id="proj-bar">
     <button class="btn-new-proj" onclick="openNewModal()">+ novo cliente</button>
@@ -584,6 +619,14 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
   </div>
 </div>
 
+  <div class="modal-bg" id="user-modal">
+  <div class="modal" style="width:450px">
+    <h3>Gestão de Usuários</h3>
+    <div id="user-list" style="max-height:300px; overflow-y:auto; margin:15px 0"></div>
+    <div class="modal-actions"><button class="modal-btn" onclick="closeUserModal()">Fechar</button></div>
+  </div>
+</div>
+  
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -595,20 +638,65 @@ const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 /* ─── ESTADO GLOBAL ─── */
 let projects = [];
 let currentId = null;
+let currentUser = null;
+let userProfile = null;
+let isSignUpMode = false;
 let F = {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
 let G = {startDate:'',endDate:'',tasks:[]};
 window._diarioLocal = [];
 
-/* ─── INICIALIZAÇÃO SUPABASE ─── */
+/* ─── AUTENTICAÇÃO E INICIALIZAÇÃO ─── */
 async function init() {
-  setSaved('saving');
-  await loadProjects();
-  if (projects.length > 0) {
-    await switchProject(projects[0].id);
+  const { data: { session } } = await supa.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    const { data: profile } = await supa.from('profiles').select('*').eq('id', currentUser.id).single();
+    userProfile = profile;
+    
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'flex';
+    document.getElementById('user-role-badge').innerText = profile?.role || 'USUÁRIO';
+    if(profile?.role === 'gestor') document.getElementById('btn-gestao-usuarios').style.display = 'block';
+
+    await loadProjects();
+    if (projects.length > 0) await switchProject(projects[0].id);
   } else {
-    renderProjBar();
-    setSaved('saved');
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('main-app').style.display = 'none';
   }
+}
+
+function toggleAuthMode() {
+  isSignUpMode = !isSignUpMode;
+  document.getElementById('auth-title').innerText = isSignUpMode ? 'Criar conta Cobli' : 'Entrar no Cobli';
+  document.getElementById('auth-subtitle').innerText = isSignUpMode ? 'Cadastre-se para gerenciar' : 'Digite seu acesso para continuar';
+  document.getElementById('auth-toggle-btn').innerText = isSignUpMode ? 'Já tem conta? Entrar' : 'Não tem conta? Criar agora';
+}
+
+async function handleAuth() {
+  const email = document.getElementById('auth-email').value;
+  const password = document.getElementById('auth-password').value;
+  const errDiv = document.getElementById('auth-error');
+  errDiv.innerText = "";
+
+  if(isSignUpMode) {
+    const { error } = await supa.auth.signUp({ email, password });
+    if(error) errDiv.innerText = error.message;
+    else alert("Conta criada! Pode tentar fazer login agora.");
+  } else {
+    const { error } = await supa.auth.signInWithPassword({ email, password });
+    if(error) errDiv.innerText = error.message;
+    else window.location.reload();
+  }
+}
+
+async function handleLogout() { await supa.auth.signOut(); window.location.reload(); }
+
+/* ─── LÓGICA DE DADOS ─── */
+async function loadProjects() {
+  const { data, error } = await supa.from('projects').select('*').order('created_at');
+  if (!error && data) projects = data;
+  renderProjBar();
 }
 
 async function loadProjects() {
@@ -618,29 +706,40 @@ async function loadProjects() {
 }
 
 async function switchProject(id) {
-  currentId = id;
-  setSaved('saving');
+  currentId = id;
+  setSaved('saving');
+  
+  const { data } = await supa.from('project_data').select('*').eq('project_id', id).single();
+  const project = projects.find(p => p.id === id);
+
+  if (data) {
+    F = data.form_json || {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
+    G = data.gantt_json || {startDate:'',endDate:'',tasks:[]};
+    window._diarioLocal = data.diario_json || []; 
+  } else {
+    F = {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
+    G = {startDate:'',endDate:'',tasks:[]};
+    window._diarioLocal = [];
+  }
+
+  // VERIFICAÇÃO DE PERMISSÕES
+  const isOwner = project.owner_id === currentUser.id;
+  const isGestor = userProfile?.role === 'gestor';
+  const canEdit = isOwner || isGestor;
+
+  // Bloqueio visual dos inputs se não for gestor/dono
+  const inputs = document.querySelectorAll('#tab-form input, #tab-form textarea, #tab-form select, #tab-gantt input');
+  inputs.forEach(el => el.disabled = !canEdit);
+  document.getElementById('readonly-warning').style.display = canEdit ? 'none' : 'block';
   
-  const { data, error } = await supa
-    .from('project_data')
-    .select('*')
-    .eq('project_id', id)
-    .single();
+  // Esconde o botão de Excluir projeto se não puder editar
+  const btnDelete = document.querySelector('.btn-export.danger');
+  if(btnDelete) btnDelete.style.display = canEdit ? 'block' : 'none';
 
-  if (data) {
-    F = data.form_json || {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
-    G = data.gantt_json || {startDate:'',endDate:'',tasks:[]};
-    window._diarioLocal = data.diario_json || []; 
-  } else {
-    F = {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
-    G = {startDate:'',endDate:'',tasks:[]};
-    window._diarioLocal = [];
-  }
-
-  renderProjBar();
-  syncFormFields(); 
-  loadG();
-  setSaved('saved');
+  renderProjBar();
+  syncFormFields(); 
+  loadG();
+  setSaved('saved');
 }
 
 async function persist() {
@@ -657,11 +756,12 @@ async function persist() {
 }
 
 async function createProject() {
-  const name = document.getElementById('modal-input').value.trim();
-  if (!name) return;
+  const name = document.getElementById('modal-input').value.trim();
+  if (!name) return;
 
-  const { data, error } = await supa.from('projects').insert([{ name }]).select();
-  if (!error && data.length > 0) {
+  // ADICIONADO owner_id AQUI:
+  const { data, error } = await supa.from('projects').insert([{ name, owner_id: currentUser.id }]).select();
+  if (!error && data.length > 0) {
     const newProj = data[0];
     await supa.from('project_data').insert([{ project_id: newProj.id }]);
     await loadProjects();
@@ -731,7 +831,34 @@ function switchTab(tab,el){
   if(tab==='diario') renderDiario();
 }
 
-function toggleCard(hdr){
+  /* ─── GESTÃO DE USUÁRIOS (GESTOR) ─── */
+async function openUserModal() {
+  document.getElementById('user-modal').classList.add('open');
+  const { data: users } = await supa.from('profiles').select('*');
+  document.getElementById('user-list').innerHTML = users.map(u => `
+    <div class="user-row">
+      <span style="font-size:12px;overflow:hidden;text-overflow:ellipsis">${u.email}</span>
+      <select onchange="updateUserRole('${u.id}', this.value)" style="font-size:11px;padding:4px;border:1px solid var(--gray200);border-radius:4px;font-family:inherit">
+        <option value="usuario" ${u.role==='usuario'?'selected':''}>Usuário</option>
+        <option value="gestor" ${u.role==='gestor'?'selected':''}>Gestor</option>
+      </select>
+      <button class="modal-btn" style="font-size:10px; padding:4px 6px" onclick="resetPass('${u.email}')">Reset Senha</button>
+    </div>
+  `).join('');
+}
+async function updateUserRole(uid, role) { 
+  await supa.from('profiles').update({ role }).eq('id', uid); 
+}
+function resetPass(email) { 
+  supa.auth.resetPasswordForEmail(email); 
+  alert("Se configurado no Supabase, um e-mail de recuperação foi enviado!"); 
+}
+function closeUserModal() { 
+  document.getElementById('user-modal').classList.remove('open'); 
+}
+/* (Pode deixar a sua toggleCard logo abaixo disso) */
+
+  function toggleCard(hdr){
   // 1. Fecha todos os outros cards primeiro
   document.querySelectorAll('.card-head').forEach(otherHdr => {
     if (otherHdr !== hdr && otherHdr.classList.contains('open')) {
