@@ -22,7 +22,7 @@ body{font-family:'DM Sans',sans-serif;background:#f0f2fa;color:var(--text);displ
 .app{display:none;flex-direction:column;height:100vh}
 
 /* TELA DE LOGIN E PERMISSÕES */
-.auth-overlay{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center}
+.auth-overlay{position:fixed;inset:0;background:var(--navy);z-index:9999;display:none;align-items:center;justify-content:center}
 .auth-box{background:#fff;padding:32px;border-radius:var(--radius-lg);width:340px;box-shadow:0 15px 35px rgba(0,0,0,0.3)}
 .auth-input{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:10px;border:1px solid var(--gray200);border-radius:var(--radius);margin-bottom:12px}
 .auth-btn{width:100%;font-family:'DM Sans',sans-serif;font-weight:600;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;margin-bottom:8px}
@@ -663,10 +663,12 @@ let G = {startDate:'',endDate:'',tasks:[]};
 window._diarioLocal = [];
 
 /* ─── AUTENTICAÇÃO E INICIALIZAÇÃO ─── */
+/* ─── AUTENTICAÇÃO E INICIALIZAÇÃO ─── */
 async function init() {
   const { data: { session } } = await supa.auth.getSession();
   
   if (session) {
+    // SE ESTIVER LOGADO -> MOSTRA O APP
     currentUser = session.user;
     const { data: profile } = await supa.from('profiles').select('*').eq('id', currentUser.id).single();
     userProfile = profile;
@@ -679,6 +681,7 @@ async function init() {
     await loadProjects();
     if (projects.length > 0) await switchProject(projects[0].id);
   } else {
+    // SE NÃO ESTIVER LOGADO -> AÍ SIM MOSTRA A TELA DE LOGIN
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('main-app').style.display = 'none';
   }
