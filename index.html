@@ -356,7 +356,8 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       <span class="nav-sub">Time de Implantação</span>
       <span id="user-role-badge" class="user-badge"></span>
     </div>
-    <div class="nav-right">
+  <div class="nav-right">
+      <span id="logged-user-email" style="font-size: 11px; color: rgba(255,255,255,0.7); margin-right: 8px;"></span>
       <button id="btn-gestao-usuarios" class="btn-nav-action" style="display:none" onclick="openUserModal()">⚙️ Usuários</button>
       <div class="save-pill" id="save-status">Salvo</div>
       <button class="btn-nav-action" style="border-color:rgba(255,255,255,0.2)" onclick="handleLogout()">Sair</button>
@@ -367,11 +368,14 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
     <button class="btn-new-proj" onclick="openNewModal()">+ novo cliente</button>
   </div>
 
-  <div class="tabbar">
+<div class="tabbar">
     <div class="tab" onclick="switchTab('dashboard',this)">Dashboard</div>
     <div class="tab active" onclick="switchTab('form',this)">Documentação do projeto</div>
     <div class="tab" onclick="switchTab('gantt',this)">Cronograma Gantt</div>
     <div class="tab" onclick="switchTab('diario',this)" style="display:flex;align-items:center;gap:6px">Diário de Bordo <span style="font-size:9px;font-weight:600;background:#faeeda;color:#633806;padding:1px 6px;border-radius:999px">Interno</span></div>
+    
+    <div style="flex: 1;"></div>
+    <div id="project-owner-info" style="display:flex; align-items:center; font-size:11px; color:var(--text3);"></div>
   </div>
 
   <div class="content" id="tab-diario" style="display:none">
@@ -677,21 +681,20 @@ window._diarioLocal = [];
 
 /* ─── AUTENTICAÇÃO E INICIALIZAÇÃO ─── */
 async function init() {
-  // FREIO DE MÃO: Se o link tiver "recovery" (recuperação), trava na tela de nova senha!
   if (window.location.hash.includes('type=recovery')) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'none';
     document.getElementById('recovery-screen').style.display = 'flex';
-    return; // Para o código aqui e não carrega o painel de projetos
+    return; 
   }
-
   const { data: { session } } = await supa.auth.getSession();
-  
-  if (session) {
+   if (session) {
     currentUser = session.user;
     const { data: profile } = await supa.from('profiles').select('*').eq('id', currentUser.id).single();
     userProfile = profile;
     
+    // EXIBE O E-MAIL DO USUÁRIO LOGADO NO TOPO
+    document.getElementById('logged-user-email').innerText = currentUser.email;
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'flex';
     document.getElementById('user-role-badge').innerText = profile?.role || 'USUÁRIO';
@@ -753,6 +756,11 @@ async function switchProject(id) {
   const isGestor = userProfile?.role === 'gestor';
   
   window.canEditCurrent = isOwner || isGestor;
+
+  // BUSCA E EXIBE O E-MAIL DO DONO DO PROJETO
+  const { data: ownerProfile } = await supa.from('profiles').select('email').eq('id', project?.owner_id).single();
+  const ownerEmail = ownerProfile?.email || 'Desconhecido';
+  document.getElementById('project-owner-info').innerHTML = `Criado por:&nbsp;<b style="color:var(--navy)">${ownerEmail}</b>`;
 
   renderProjBar();
   syncFormFields(); 
