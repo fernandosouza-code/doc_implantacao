@@ -873,6 +873,14 @@ async function init() {
   
   if (session) {
     currentUser = session.user;
+
+    // Garante que o perfil existe no banco (evita erro de FK ao criar projetos)
+    await supa.from('profiles').upsert({
+      id: currentUser.id,
+      email: currentUser.email,
+      role: 'usuario'
+    }, { onConflict: 'id', ignoreDuplicates: true });
+
     const { data: profile } = await supa.from('profiles').select('*').eq('id', currentUser.id).single();
     userProfile = profile;
     
@@ -1063,6 +1071,13 @@ async function createProject() {
       if (session) currentUser = session.user;
       else { alert('Sessão expirada. Recarregue a página e faça login novamente.'); return; }
     }
+
+    // Garante que o perfil existe (resolve o erro de foreign key)
+    await supa.from('profiles').upsert({
+      id: currentUser.id,
+      email: currentUser.email,
+      role: userProfile?.role || 'usuario'
+    }, { onConflict: 'id', ignoreDuplicates: true });
 
     const { data, error } = await supa.from('projects')
       .insert([{ name, owner_id: currentUser.id }])
