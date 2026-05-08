@@ -669,13 +669,14 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 <div class="modal-bg" id="user-modal">
   <div class="modal" style="width:480px; max-width: 95%;">
     <h3>Gestão de Usuários</h3>   
-    <div style="background: var(--gray50); padding: 12px; border-radius: var(--radius); margin-bottom: 15px; border: 1px solid var(--gray200)">
-        <p style="font-size: 11px; font-weight: 600; color: var(--navy); margin-bottom: 8px">ADICIONAR NOVO ACESSO</p>
-        <div style="display: flex; gap: 8px">
-            <input type="email" id="new-user-email" placeholder="E-mail" style="flex:1; padding: 6px; font-size: 12px; border: 1px solid var(--gray200); border-radius: 4px">
-            <input type="password" id="new-user-pass" placeholder="Senha" style="width: 100px; padding: 6px; font-size: 12px; border: 1px solid var(--gray200); border-radius: 4px">
-            <button class="modal-btn primary" style="padding: 6px 12px; font-size: 11px" onclick="addUserByGestor()">Incluir</button>
+    <div style="background: var(--gray50); padding: 14px; border-radius: var(--radius); margin-bottom: 15px; border: 1px solid var(--gray200)">
+        <p style="font-size: 11px; font-weight: 600; color: var(--navy); margin-bottom: 4px">ADICIONAR NOVO CONSULTOR</p>
+        <p style="font-size: 11px; color: var(--text3); margin-bottom: 10px">Um e-mail de boas-vindas será enviado automaticamente com o link de acesso.</p>
+        <div style="display: flex; gap: 8px; align-items: center">
+            <input type="email" id="new-user-email" placeholder="E-mail do consultor" style="flex:1; padding: 7px 10px; font-size: 12px; border: 1px solid var(--gray200); border-radius: 4px; font-family:'Geist',sans-serif">
+            <button class="modal-btn primary" style="padding: 7px 14px; font-size: 11px; white-space:nowrap" onclick="addUserByGestor()">Enviar convite</button>
         </div>
+        <div id="invite-status" style="font-size:11px;margin-top:8px;display:none"></div>
     </div>
     <p style="font-size: 11px; font-weight: 600; color: var(--navy); margin-bottom: 5px">USUÁRIOS ATIVOS</p>
     <div id="user-list" style="max-height:250px; overflow-y:auto; margin-bottom: 15px"></div>   
@@ -987,19 +988,54 @@ async function openUserModal() {
 
 async function addUserByGestor() {
   const email = document.getElementById('new-user-email').value.trim();
-  const password = document.getElementById('new-user-pass').value;
+  const statusEl = document.getElementById('invite-status');
 
-  if (!email || !password) return alert("Preencha e-mail e senha provisória.");
+  if (!email) {
+    statusEl.style.display = 'block';
+    statusEl.style.color = 'var(--red-dark)';
+    statusEl.textContent = 'Preencha o e-mail do consultor.';
+    return;
+  }
 
-  const { data, error } = await supa.auth.signUp({ email, password });
+  // Botão de loading
+  const btn = document.querySelector('#user-modal .modal-btn.primary');
+  btn.textContent = 'Enviando...';
+  btn.disabled = true;
+  statusEl.style.display = 'none';
 
-  if (error) {
-    alert("Erro ao incluir: " + error.message);
+  // Senha temporária aleatória — o usuário vai redefinir pelo link do e-mail
+  const tempPwd = 'Cobli@' + Math.random().toString(36).slice(2,8).toUpperCase() + Date.now().toString(36);
+
+  const { error: signupError } = await supa.auth.signUp({ email, password: tempPwd });
+
+  if (signupError) {
+    statusEl.style.display = 'block';
+    statusEl.style.color = 'var(--red-dark)';
+    statusEl.textContent = 'Erro ao criar acesso: ' + signupError.message;
+    btn.textContent = 'Enviar convite';
+    btn.disabled = false;
+    return;
+  }
+
+  // Envia e-mail de boas-vindas com link para definir a senha
+  const { error: emailError } = await supa.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.href.split('#')[0]
+  });
+
+  btn.textContent = 'Enviar convite';
+  btn.disabled = false;
+
+  if (emailError) {
+    statusEl.style.display = 'block';
+    statusEl.style.color = '#854F0B';
+    statusEl.textContent = `Acesso criado, mas o e-mail não foi enviado. Use o botão "Reset" na lista para reenviar.`;
   } else {
-    alert("Usuário incluído com sucesso! Ele já pode logar.");
-    document.getElementById('new-user-email').value = "";
-    document.getElementById('new-user-pass').value = "";
-    openUserModal();
+    statusEl.style.display = 'block';
+    statusEl.style.color = 'var(--green-dark)';
+    statusEl.textContent = `✓ Convite enviado para ${email}! O consultor receberá o link de acesso por e-mail.`;
+    document.getElementById('new-user-email').value = '';
+    // Atualiza a lista de usuários após 1s
+    setTimeout(() => openUserModal(), 1200);
   }
 }
 
