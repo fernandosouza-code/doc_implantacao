@@ -352,7 +352,7 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 }
 
 /* ─── ESTADO VAZIO / BOAS-VINDAS ─── */
-.welcome-screen{display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;background:#f0f2fa;text-align:center}
+.welcome-screen{display:none;position:fixed;inset:0;top:52px;background:#f0f2fa;z-index:80;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
 .welcome-screen.active{display:flex}
 .welcome-icon{width:72px;height:72px;background:linear-gradient(135deg,var(--cobli-indigo),var(--cobli-royal));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
 .welcome-title{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px}
@@ -2217,20 +2217,13 @@ function renderAgenda(){
 
 function showWelcomeScreen() {
   document.getElementById('welcome-screen').classList.add('active');
-  document.getElementById('tab-form').style.display = 'none';
-  document.getElementById('tab-gantt').style.display = 'none';
-  document.getElementById('tab-diario').style.display = 'none';
-  document.getElementById('tab-agenda').style.display = 'none';
-  document.getElementById('tab-dashboard').style.display = 'none';
-  document.getElementById('export-bar').style.display = 'none';
-  // Limpa os selects de filtro
+  // Limpa o select de cliente para não mostrar projetos de outros
   const cs = document.getElementById('filter-cliente');
-  if(cs) cs.innerHTML = '<option value="">Nenhum projeto ainda</option>';
+  if(cs) cs.innerHTML = '<option value="">— sem projetos —</option>';
 }
 
 function hideWelcomeScreen() {
   document.getElementById('welcome-screen').classList.remove('active');
-  document.getElementById('export-bar').style.display = 'flex';
 }
 
 /* ─── BOOT ─── */
