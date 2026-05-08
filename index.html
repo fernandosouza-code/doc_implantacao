@@ -808,7 +808,7 @@ async function showForgotPassword() {
     return;
   }
   const { error } = await supa.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://luizlackeski.github.io/cobli-implantacao/'
+    redirectTo: 'https://fernandosouza-code.github.io/doc_implantacao/'
   });
   const errDiv = document.getElementById('auth-error');
   if (error) {
@@ -1059,7 +1059,7 @@ async function updateUserRole(uid, role) {
 
 function resetPass(email) { 
   supa.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://luizlackeski.github.io/cobli-implantacao/'
+    redirectTo: 'https://fernandosouza-code.github.io/doc_implantacao/'
   }); 
   alert("Link de recuperação enviado para " + email); 
 }
