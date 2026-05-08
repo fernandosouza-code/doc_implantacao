@@ -1068,18 +1068,23 @@ function renderProjBar(){
   const clienteSelect = document.getElementById('filter-cliente');
   if (!clienteSelect) return;
 
-  // Lê o filtro de responsável atual
+  // Lê filtros atuais
   const respFilter = document.getElementById('filter-responsavel')?.value || '';
   const visibleProjects = respFilter ? projects.filter(p => p.owner_id === respFilter) : projects;
 
-  // Popula o select de cliente
-  clienteSelect.innerHTML = visibleProjects.map(p =>
-    `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${e(p.name)}</option>`
-  ).join('');
+  // Popula o select de cliente com opção "Todos" + projetos filtrados
+  const prevCliente = clienteSelect.value;
+  clienteSelect.innerHTML =
+    '<option value="">— Todos os clientes —</option>' +
+    visibleProjects.map(p =>
+      `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${e(p.name)}</option>`
+    ).join('');
 
-  // Se o projeto atual sumiu do filtro, carrega o primeiro disponível
-  if (visibleProjects.length > 0 && !visibleProjects.find(p => p.id === currentId)) {
-    switchProject(visibleProjects[0].id);
+  // Restaura seleção anterior se ainda existir na lista filtrada
+  if (prevCliente && visibleProjects.find(p => p.id === prevCliente)) {
+    clienteSelect.value = prevCliente;
+  } else {
+    clienteSelect.value = currentId || '';
   }
 
   // Popula o select de responsável
@@ -1099,20 +1104,31 @@ function renderProjBar(){
 
 function onFilterCliente() {
   const selected = document.getElementById('filter-cliente').value;
-  if (selected && selected !== currentId) switchProject(selected);
+  // Se "Todos" foi selecionado, apenas limpa o destaque sem trocar de projeto
+  if (!selected) return;
+  if (selected !== currentId) switchProject(selected);
 }
 
 function onFilterResponsavel() {
   const ownerId = document.getElementById('filter-responsavel').value;
+
+  // Filtra projetos pelo responsável escolhido
   const visibleProjects = ownerId ? projects.filter(p => p.owner_id === ownerId) : projects;
 
+  // Reconstrói o select de cliente com "Todos" + projetos do responsável
   const clienteSelect = document.getElementById('filter-cliente');
-  clienteSelect.innerHTML = visibleProjects.map(p =>
-    `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${e(p.name)}</option>`
-  ).join('');
+  clienteSelect.innerHTML =
+    '<option value="">— Todos os clientes —</option>' +
+    visibleProjects.map(p =>
+      `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${e(p.name)}</option>`
+    ).join('');
 
-  if (visibleProjects.length > 0 && !visibleProjects.find(p => p.id === currentId)) {
+  // Se o projeto aberto não pertence a esse responsável, abre o primeiro da lista
+  if (ownerId && visibleProjects.length > 0 && !visibleProjects.find(p => p.id === currentId)) {
     switchProject(visibleProjects[0].id);
+    clienteSelect.value = visibleProjects[0].id;
+  } else {
+    clienteSelect.value = currentId || '';
   }
 }
 
