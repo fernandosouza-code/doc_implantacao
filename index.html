@@ -1027,14 +1027,21 @@ async function switchProject(id) {
 async function persist() {
   if(!currentId) return;
   setSaved('saving');
-  const { error } = await supa.from('project_data').upsert({
+  // Tenta salvar com agenda_json; se a coluna não existir no banco, salva sem ela
+  let savePayload = {
     project_id: currentId,
     form_json: F,
     gantt_json: G,
     diario_json: window._diarioLocal,
     agenda_json: window._agendaLocal,
     updated_at: new Date()
-  });
+  };
+  let { error } = await supa.from('project_data').upsert(savePayload);
+  if (error && error.message?.includes('agenda_json')) {
+    delete savePayload.agenda_json;
+    const res2 = await supa.from('project_data').upsert(savePayload);
+    error = res2.error;
+  }
   if (!error) {
     setSaved('saved');
     if(currentId && F.dados?.projectStatus) window._projectStatuses[currentId] = F.dados.projectStatus;
@@ -1045,14 +1052,45 @@ async function createProject() {
   const name = document.getElementById('modal-input').value.trim();
   if (!name) return;
 
-  const { data, error } = await supa.from('projects').insert([{ name, owner_id: currentUser.id }]).select();
-  if (!error && data.length > 0) {
+  // Botão de loading
+  const btnCriar = document.querySelector('#modal-bg .modal-btn.primary');
+  if (btnCriar) { btnCriar.textContent = 'Criando...'; btnCriar.disabled = true; }
+
+  try {
+    // Garante sessão ativa
+    if (!currentUser) {
+      const { data: { session } } = await supa.auth.getSession();
+      if (session) currentUser = session.user;
+      else { alert('Sessão expirada. Recarregue a página e faça login novamente.'); return; }
+    }
+
+    const { data, error } = await supa.from('projects')
+      .insert([{ name, owner_id: currentUser.id }])
+      .select();
+
+    if (error) throw new Error('Erro ao criar projeto: ' + error.message);
+    if (!data || data.length === 0) throw new Error('Projeto não foi retornado. Tente novamente.');
+
     const newProj = data[0];
-    await supa.from('project_data').insert([{ project_id: newProj.id }]);
+
+    // Cria registro de dados do projeto (ignora erro se coluna agenda_json não existir)
+    await supa.from('project_data').insert([{
+      project_id: newProj.id,
+      form_json: { stk:[], bases:[], risks:[], costs:[], matriz:[], dados:{} },
+      gantt_json: { startDate:'', endDate:'', tasks:[] },
+      diario_json: [],
+      agenda_json: []
+    }]);
+
     await loadProjects();
     hideWelcomeScreen();
-    await switchProject(newProj.id);
     closeModal();
+    await switchProject(newProj.id);
+
+  } catch(err) {
+    alert(err.message || 'Erro desconhecido ao criar projeto.');
+  } finally {
+    if (btnCriar) { btnCriar.textContent = 'Criar projeto'; btnCriar.disabled = false; }
   }
 }
 
