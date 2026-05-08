@@ -350,6 +350,17 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
   .cost-summary{grid-template-columns:1fr}
   .topnav,.proj-bar,.content,.export-bar{padding-left:16px;padding-right:16px}
 }
+
+/* ─── ESTADO VAZIO / BOAS-VINDAS ─── */
+.welcome-screen{display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;background:#f0f2fa;text-align:center}
+.welcome-screen.active{display:flex}
+.welcome-icon{width:72px;height:72px;background:linear-gradient(135deg,var(--cobli-indigo),var(--cobli-royal));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.welcome-title{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.welcome-sub{font-size:14px;color:var(--text2);margin-bottom:28px;max-width:380px;line-height:1.6}
+.welcome-btn{font-size:14px;font-family:'Geist',sans-serif;font-weight:600;padding:12px 28px;background:linear-gradient(90deg,var(--cobli-indigo),var(--cobli-royal));color:#fff;border:none;border-radius:var(--radius);cursor:pointer;transition:opacity .2s}
+.welcome-btn:hover{opacity:.88}
+.welcome-hint{font-size:11px;color:var(--text3);margin-top:14px}
+
 </style>
 </head>
 <body>
@@ -743,6 +754,21 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
     <button class="btn-export danger" id="btn-delete-proj" onclick="deleteProject()">Excluir projeto</button>
   </div>
 
+  <!-- TELA DE BOAS-VINDAS (usuário sem projetos próprios) -->
+  <div class="welcome-screen" id="welcome-screen">
+    <div class="welcome-icon">
+      <svg width="34" height="34" viewBox="0 0 1100.05 1214.25" fill="white">
+        <path d="M530.24,400.11c21.82-8.1,44.81-12.67,68.31-13.59,35.67-1.4,70.01,5.53,102.08,20.55,3.79,1.77,7.77,2.61,11.69,2.61,10.37,0,20.31-5.88,25.01-15.89,6.47-13.8,.52-30.23-13.28-36.7-39.57-18.54-83.71-27.43-127.65-25.73-29.35,1.14-58.07,6.86-85.38,16.99-14.29,5.3-21.57,21.19-16.27,35.48s21.19,21.57,35.48,16.27Z"/>
+        <path d="M800.24,272.45c-13.19-7.63-30.08-3.12-37.7,10.08-7.63,13.19-3.12,30.07,10.08,37.7,41.55,24.02,78.1,57.48,105.7,96.76,5.37,7.65,13.92,11.73,22.6,11.73,5.48,0,11.02-1.63,15.84-5.02,12.47-8.76,15.48-25.98,6.71-38.45-32.18-45.79-74.79-84.8-123.23-112.81Z"/>
+        <path d="M449.27,413.4c-10.88-10.68-28.35-10.52-39.03,.36-53.06,54.05-81.81,128.44-78.87,204.09,5.77,148.42,128.35,265.25,275.62,265.24,3.6,0,7.23-.07,10.86-.21,43.56-1.7,84.87-13.19,122.77-34.17,13.33-7.38,18.16-24.17,10.78-37.51-7.38-13.33-24.18-18.16-37.51-10.78-30.28,16.76-63.32,25.95-98.19,27.3-58.91,2.29-115.22-18.5-158.5-58.55-43.29-40.05-68.39-94.55-70.68-153.48-2.39-61.42,20.02-119.4,63.1-163.28,10.68-10.88,10.52-28.35-.36-39.03Z"/>
+      </svg>
+    </div>
+    <div class="welcome-title">Bem-vindo ao Cobli Implantação</div>
+    <div class="welcome-sub">Você ainda não tem nenhum projeto. Crie o seu primeiro projeto para começar a documentar a implantação de um cliente.</div>
+    <button class="welcome-btn" onclick="openNewModal()">+ Criar meu primeiro projeto</button>
+    <div class="welcome-hint">O projeto ficará disponível só para você, a menos que um gestor acesse.</div>
+  </div>
+
 </div>
 
 <div class="modal-bg" id="modal-bg">
@@ -781,8 +807,8 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ─── CONFIGURAÇÃO SUPABASE ─── */
-const SUPABASE_URL = 'https://hupsmztxkiitgboycmdn.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1cHNtenR4a2lpdGdib3ljbWRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTAxOTgsImV4cCI6MjA5MzY2NjE5OH0.7RlMQFHqh6isgvRxmE3joSLqEhy7lseiXrLx4tRaoco';
+const SUPABASE_URL = 'https://riiaikmqdumhhpbedlyp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpaWFpa21xZHVtaGhwYmVkbHlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTcyODQsImV4cCI6MjA5MzUzMzI4NH0.NSrTLf2K08UUx2Wc0FlL55HoXFEt61Emf0xh1D1LBHg';
 const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* ─── ESTADO GLOBAL ─── */
@@ -835,7 +861,21 @@ async function init() {
     if(profile?.role === 'gestor') document.getElementById('btn-gestao-usuarios').style.display = 'block';
 
     await loadProjects();
-    if (projects.length > 0) await switchProject(projects[0].id);
+    const myProjects = projects.filter(p => p.owner_id === currentUser.id);
+    if (myProjects.length > 0) {
+      // Pré-filtra responsável pelo usuário logado (exceto gestor que vê todos)
+      if (profile?.role !== 'gestor') {
+        const respSel = document.getElementById('filter-responsavel');
+        if (respSel) { respSel.value = currentUser.id; }
+      }
+      await switchProject(myProjects[0].id);
+    } else if (projects.length > 0 && profile?.role === 'gestor') {
+      // Gestor sem projetos próprios: carrega o primeiro global
+      await switchProject(projects[0].id);
+    } else {
+      // Consultor sem projetos próprios: mostra tela de boas-vindas
+      showWelcomeScreen();
+    }
   } else {
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('main-app').style.display = 'none';
@@ -972,6 +1012,7 @@ async function createProject() {
     const newProj = data[0];
     await supa.from('project_data').insert([{ project_id: newProj.id }]);
     await loadProjects();
+    hideWelcomeScreen();
     await switchProject(newProj.id);
     closeModal();
   }
@@ -2171,6 +2212,25 @@ function renderAgenda(){
   });
 
   listEl.innerHTML = out;
+}
+
+
+function showWelcomeScreen() {
+  document.getElementById('welcome-screen').classList.add('active');
+  document.getElementById('tab-form').style.display = 'none';
+  document.getElementById('tab-gantt').style.display = 'none';
+  document.getElementById('tab-diario').style.display = 'none';
+  document.getElementById('tab-agenda').style.display = 'none';
+  document.getElementById('tab-dashboard').style.display = 'none';
+  document.getElementById('export-bar').style.display = 'none';
+  // Limpa os selects de filtro
+  const cs = document.getElementById('filter-cliente');
+  if(cs) cs.innerHTML = '<option value="">Nenhum projeto ainda</option>';
+}
+
+function hideWelcomeScreen() {
+  document.getElementById('welcome-screen').classList.remove('active');
+  document.getElementById('export-bar').style.display = 'flex';
 }
 
 /* ─── BOOT ─── */
