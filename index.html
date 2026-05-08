@@ -352,8 +352,7 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 }
 
 /* ─── ESTADO VAZIO / BOAS-VINDAS ─── */
-.welcome-screen{display:none;position:fixed;inset:0;top:52px;background:#f0f2fa;z-index:80;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
-.welcome-screen.active{display:flex}
+.welcome-screen{display:none;position:fixed;inset:0;background:#f0f2fa;z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
 .welcome-icon{width:72px;height:72px;background:linear-gradient(135deg,var(--cobli-indigo),var(--cobli-royal));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
 .welcome-title{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px}
 .welcome-sub{font-size:14px;color:var(--text2);margin-bottom:28px;max-width:380px;line-height:1.6}
@@ -429,6 +428,15 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       <span style="font-size:11px;color:rgba(255,255,255,0.55);white-space:nowrap;font-weight:500">Responsável:</span>
       <select id="filter-responsavel" onchange="onFilterResponsavel()" style="font-family:'Geist',sans-serif;font-size:12px;font-weight:600;padding:5px 10px;background:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:var(--cobli-indigo);cursor:pointer;min-width:140px;max-width:210px">
         <option value="">Todos</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
+      <span style="font-size:11px;color:rgba(255,255,255,0.55);white-space:nowrap;font-weight:500">Status:</span>
+      <select id="filter-status" onchange="onFilterStatus()" style="font-family:'Geist',sans-serif;font-size:12px;font-weight:600;padding:5px 10px;background:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:var(--cobli-indigo);cursor:pointer;min-width:160px">
+        <option value="">Todos</option>
+        <option value="Em Andamento">🔵 Em Andamento</option>
+        <option value="Aguardando Aprovação">🟡 Aguardando Aprovação</option>
+        <option value="Projeto Finalizado">🟢 Projeto Finalizado</option>
       </select>
     </div>
     <button class="btn-new-proj" onclick="openNewModal()">+ novo cliente</button>
@@ -583,9 +591,16 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       </div>
       <div class="card-body open">
         <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Dados chave do projeto</strong>Cartão de identidade do projeto — preencha assim que o contrato for fechado.<ul><li><b>Nome do projeto:</b> identificação interna</li><li><b>Responsável:</b> quem da Cobli lidera</li><li><b>Patrocinador:</b> decisor do lado do cliente</li><li><b>Produto:</b> solução contratada</li><li><b>Data e prazo:</b> base para cronograma e SLA</li><li><b>Objetivo SMART:</b> meta mensurável</li><li><b>Entregáveis:</b> o que será entregue ao final</li></ul></div></div>
-        <div class="fg c2">
+        <div class="fg c3">
           <div class="f"><label>Nome do projeto</label><input id="f-nome" placeholder="Ex: Implementação Cobli — Cliente XPTO" onchange="saveF()"></div>
           <div class="f"><label>Responsável (Cobli)</label><input id="f-resp" onchange="saveF()"></div>
+          <div class="f"><label>Status do projeto</label>
+            <select id="f-status" onchange="saveF()">
+              <option value="Em Andamento">🔵 Em Andamento</option>
+              <option value="Aguardando Aprovação">🟡 Aguardando Aprovação</option>
+              <option value="Projeto Finalizado">🟢 Projeto Finalizado</option>
+            </select>
+          </div>
         </div>
         <div class="fg c2">
           <div class="f"><label>Patrocinador / cliente</label><input id="f-pat" onchange="saveF()"></div>
@@ -755,7 +770,7 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
   </div>
 
   <!-- TELA DE BOAS-VINDAS (usuário sem projetos próprios) -->
-  <div class="welcome-screen" id="welcome-screen">
+  <div class="welcome-screen" id="welcome-screen" style="display:none">
     <div class="welcome-icon">
       <svg width="34" height="34" viewBox="0 0 1100.05 1214.25" fill="white">
         <path d="M530.24,400.11c21.82-8.1,44.81-12.67,68.31-13.59,35.67-1.4,70.01,5.53,102.08,20.55,3.79,1.77,7.77,2.61,11.69,2.61,10.37,0,20.31-5.88,25.01-15.89,6.47-13.8,.52-30.23-13.28-36.7-39.57-18.54-83.71-27.43-127.65-25.73-29.35,1.14-58.07,6.86-85.38,16.99-14.29,5.3-21.57,21.19-16.27,35.48s21.19,21.57,35.48,16.27Z"/>
@@ -939,6 +954,8 @@ async function showForgotPassword() {
 async function loadProjects() {
   const { data, error } = await supa.from('projects').select('*').order('created_at');
   if (!error && data) projects = data;
+
+  // Cache de e-mails dos responsáveis
   if (!window._ownerEmails) window._ownerEmails = {};
   const ownerIds = [...new Set(projects.map(p => p.owner_id).filter(Boolean))];
   const missing = ownerIds.filter(id => !window._ownerEmails[id]);
@@ -946,6 +963,16 @@ async function loadProjects() {
     const { data: profiles } = await supa.from('profiles').select('id, email').in('id', missing);
     if (profiles) profiles.forEach(p => { window._ownerEmails[p.id] = p.email; });
   }
+
+  // Cache de status dos projetos para o filtro
+  if (!window._projectStatuses) window._projectStatuses = {};
+  if (projects.length > 0) {
+    const { data: allPd } = await supa.from('project_data').select('project_id, form_json');
+    if (allPd) allPd.forEach(pd => {
+      window._projectStatuses[pd.project_id] = pd.form_json?.dados?.projectStatus || 'Em Andamento';
+    });
+  }
+
   renderProjBar();
 }
 
@@ -1000,7 +1027,10 @@ async function persist() {
     agenda_json: window._agendaLocal,
     updated_at: new Date()
   });
-  if (!error) setSaved('saved');
+  if (!error) {
+    setSaved('saved');
+    if(currentId && F.dados?.projectStatus) window._projectStatuses[currentId] = F.dados.projectStatus;
+  }
 }
 
 async function createProject() {
@@ -1020,23 +1050,23 @@ async function createProject() {
 
 async function deleteProject(){
   if(!window.canEditCurrent) return;
-  if(projects.length===1){
-    if(!confirm('Limpar todos os dados deste projeto?')) return;
-    F = {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
-    G = {startDate:'',endDate:'',tasks:[]};
-    window._diarioLocal = [];
-    window._agendaLocal = [];
-    persist();
-    syncFormFields(); loadG();
-    return;
-  }
   const p = projects.find(x=>x.id===currentId);
-  if(!confirm(`Excluir o projeto "${p.name}" permanentemente?`)) return;
-  
+  if(!confirm(`Excluir o projeto "${p?.name}" permanentemente? Esta ação não pode ser desfeita.`)) return;
+
+  await supa.from('project_data').delete().eq('project_id', currentId);
   await supa.from('projects').delete().eq('id', currentId);
   await loadProjects();
-  if(projects.length > 0) {
-      await switchProject(projects[0].id);
+
+  const myProjs = projects.filter(q => q.owner_id === currentUser.id);
+  const isGestor = userProfile?.role === 'gestor';
+  if (myProjs.length > 0) {
+    hideWelcomeScreen();
+    await switchProject(myProjs[0].id);
+  } else if (isGestor && projects.length > 0) {
+    hideWelcomeScreen();
+    await switchProject(projects[0].id);
+  } else {
+    showWelcomeScreen();
   }
 }
 
@@ -1187,8 +1217,12 @@ function closeModal(){
 function renderProjBar(){
   const clienteSelect = document.getElementById('filter-cliente');
   if (!clienteSelect) return;
-  const respFilter = document.getElementById('filter-responsavel')?.value || '';
-  const visibleProjects = respFilter ? projects.filter(p => p.owner_id === respFilter) : projects;
+  const respFilter   = document.getElementById('filter-responsavel')?.value || '';
+  const statusFilter = document.getElementById('filter-status')?.value || '';
+  let visibleProjects = respFilter ? projects.filter(p => p.owner_id === respFilter) : projects;
+  if (statusFilter) visibleProjects = visibleProjects.filter(p =>
+    (window._projectStatuses?.[p.id] || 'Em Andamento') === statusFilter
+  );
   const prevCliente = clienteSelect.value;
   clienteSelect.innerHTML = '<option value="">— Todos os clientes —</option>' +
     visibleProjects.map(p => `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${e(p.name)}</option>`).join('');
@@ -1212,6 +1246,22 @@ function onFilterCliente() {
   const selected = document.getElementById('filter-cliente').value;
   if (!selected) return;
   if (selected !== currentId) switchProject(selected);
+}
+
+function onFilterStatus() {
+  const statusFilter = document.getElementById('filter-status').value;
+  const respFilter   = document.getElementById('filter-responsavel').value;
+  let visibleProjects = respFilter ? projects.filter(p => p.owner_id === respFilter) : projects;
+  if (statusFilter) visibleProjects = visibleProjects.filter(p =>
+    (window._projectStatuses?.[p.id] || 'Em Andamento') === statusFilter
+  );
+  const clienteSelect = document.getElementById('filter-cliente');
+  clienteSelect.innerHTML = '<option value="">— Todos os clientes —</option>' +
+    visibleProjects.map(p => `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${e(p.name)}</option>`).join('');
+  if (visibleProjects.length > 0 && !visibleProjects.find(p => p.id === currentId)) {
+    switchProject(visibleProjects[0].id);
+    clienteSelect.value = visibleProjects[0].id;
+  } else { clienteSelect.value = currentId || ''; }
 }
 
 function onFilterResponsavel() {
@@ -1259,6 +1309,7 @@ function syncFormFields() {
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
   const d=F.dados;
   ['nome','resp','pat','prod','data','prazo','crit','obj','entrega'].forEach(k=>set('f-'+k,d[k]));
+  set('f-status', d.projectStatus||'Em Andamento');
   ['total','cancel','tipo','custom'].forEach(k=>set('fr-'+k,d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]));
   set('c-obs',d.cObs);
   ['teste','visitas','nst','nsc','tempo'].forEach(k=>set('m-'+k,d['m'+k.charAt(0).toUpperCase()+k.slice(1)]));
@@ -1269,6 +1320,7 @@ function syncFormFields() {
 function saveF(){
   const d={};
   ['nome','resp','pat','prod','data','prazo','crit','obj','entrega'].forEach(k=>d[k]=getVal('f-'+k));
+  d.projectStatus = getVal('f-status') || 'Em Andamento';
   ['total','cancel','tipo','custom'].forEach(k=>d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('fr-'+k));
   d.cObs=getVal('c-obs');
   ['teste','visitas','nst','nsc','tempo'].forEach(k=>d['m'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('m-'+k));
@@ -2216,14 +2268,14 @@ function renderAgenda(){
 
 
 function showWelcomeScreen() {
-  document.getElementById('welcome-screen').classList.add('active');
+  document.getElementById('welcome-screen').style.display = 'flex';
   // Limpa o select de cliente para não mostrar projetos de outros
   const cs = document.getElementById('filter-cliente');
   if(cs) cs.innerHTML = '<option value="">— sem projetos —</option>';
 }
 
 function hideWelcomeScreen() {
-  document.getElementById('welcome-screen').classList.remove('active');
+  document.getElementById('welcome-screen').style.display = 'none';
 }
 
 /* ─── BOOT ─── */
