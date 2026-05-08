@@ -145,6 +145,44 @@ table.itbl td input:disabled,table.itbl td select:disabled{color:var(--text3);cu
 .cost-card.neg .cost-value{color:var(--red-dark)}
 
 /* GANTT */
+
+/* ─── AGENDAMENTOS ─── */
+.agenda-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.agenda-stat-bar{display:flex;gap:8px;flex-wrap:wrap}
+.agenda-stat{background:#fff;border:1px solid var(--gray200);border-radius:var(--radius);padding:8px 14px;font-size:12px;display:flex;align-items:center;gap:6px}
+.agenda-stat-num{font-size:16px;font-weight:600;color:var(--navy)}
+.agenda-stat-label{color:var(--text3)}
+.agenda-form-card{background:#fff;border:2px dashed var(--cobli-royal);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px}
+.agenda-form-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+.agenda-form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.agenda-form-actions{display:flex;gap:8px;justify-content:flex-end}
+.agenda-card{background:#fff;border:1px solid var(--gray200);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;transition:box-shadow .15s}
+.agenda-card:hover{box-shadow:0 2px 12px rgba(7,7,78,.07)}
+.agenda-card.status-realizado{border-left:3px solid var(--green)}
+.agenda-card.status-noshow{border-left:3px solid var(--red)}
+.agenda-card.status-confirmado{border-left:3px solid #EF9F27}
+.agenda-card.status-agendado{border-left:3px solid var(--cobli-royal)}
+.agenda-card.status-cancelado{border-left:3px solid var(--gray400);opacity:.7}
+.agenda-card-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--gray100);flex-wrap:wrap}
+.agenda-date-badge{background:var(--cobli-indigo);color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;white-space:nowrap}
+.agenda-date-badge.past{background:var(--gray400)}
+.agenda-base{font-size:13px;font-weight:600;color:var(--navy);flex:1}
+.agenda-status-pill{font-size:10px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap;border:none;cursor:pointer;font-family:'Geist',sans-serif;margin-left:auto}
+.as-agendado{background:var(--blue10);color:var(--cobli-royal)}
+.as-confirmado{background:#faeeda;color:#633806}
+.as-realizado{background:var(--green10);color:var(--green-dark)}
+.as-noshow{background:#fff0ee;color:var(--red-dark)}
+.as-cancelado{background:var(--gray100);color:var(--gray600)}
+.agenda-card-body{display:grid;grid-template-columns:repeat(4,1fr);gap:6px 16px;padding:10px 14px;font-size:12px}
+.agenda-field label{font-size:10px;color:var(--text3);font-weight:500;display:block;margin-bottom:2px}
+.agenda-field span{color:var(--text);font-weight:500}
+.agenda-obs{padding:6px 14px 10px;font-size:12px;color:var(--text2);border-top:1px solid var(--gray100);font-style:italic}
+.agenda-actions{display:flex;gap:6px;padding:8px 14px;justify-content:flex-end;border-top:1px solid var(--gray100)}
+.agenda-empty{text-align:center;padding:3rem;color:var(--text3);font-size:13px}
+.agenda-filters{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.agenda-filters select{font-family:'Geist',sans-serif;font-size:12px;padding:5px 9px;border:1px solid var(--gray200);border-radius:var(--radius);background:#fff;color:var(--text)}
+.agenda-section-title{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--gray200)}
+
 .gantt-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
 .gantt-toolbar label{font-size:12px;color:var(--text2)}
 .gantt-toolbar input[type=date],.gantt-toolbar input[type=number]{font-size:12px;font-family:'Geist',sans-serif;padding:6px 9px;border:1px solid var(--gray200);border-radius:var(--radius);background:var(--gray50);color:var(--text)}
@@ -390,6 +428,7 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
     <div class="tab active" onclick="switchTab('form',this)">Documentação do projeto</div>
     <div class="tab" onclick="switchTab('gantt',this)">Cronograma Gantt</div>
     <div class="tab" onclick="switchTab('diario',this)" style="display:flex;align-items:center;gap:6px">Diário de Bordo <span style="font-size:9px;font-weight:600;background:#faeeda;color:#633806;padding:1px 6px;border-radius:999px">Interno</span></div>
+    <div class="tab" onclick="switchTab('agenda',this)" style="display:flex;align-items:center;gap:6px">Agendamentos <span style="font-size:9px;font-weight:600;background:var(--blue10);color:var(--cobli-royal);padding:1px 6px;border-radius:999px" id="agenda-badge">0</span></div>
     
     <div style="flex: 1;"></div>
     <div id="project-owner-info" style="display:flex; align-items:center; font-size:11px; color:var(--text3);"></div>
@@ -464,6 +503,65 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       </select>
     </div>
     <div id="dash-body"></div>
+  </div>
+
+
+  <div class="content" id="tab-agenda" style="display:none">
+
+    <div class="agenda-header">
+      <div class="agenda-stat-bar" id="agenda-stats"></div>
+      <button class="btn-ghost" onclick="toggleAgendaForm()" id="btn-add-agenda" style="background:var(--cobli-royal);color:#fff;border-color:var(--cobli-royal)">+ novo agendamento</button>
+    </div>
+
+    <!-- Formulário -->
+    <div class="agenda-form-card" id="agenda-form" style="display:none">
+      <div class="agenda-form-grid">
+        <div class="f"><label>Data</label><input type="date" id="ag-data"></div>
+        <div class="f"><label>Horário</label><input type="time" id="ag-hora"></div>
+        <div class="f"><label>Base / Local</label><input type="text" id="ag-base" placeholder="Ex: Base SP - Matriz"></div>
+        <div class="f"><label>Status</label>
+          <select id="ag-status">
+            <option value="Agendado">Agendado</option>
+            <option value="Confirmado">Confirmado</option>
+            <option value="Realizado">Realizado</option>
+            <option value="No-show">No-show</option>
+            <option value="Cancelado">Cancelado</option>
+          </select>
+        </div>
+      </div>
+      <div class="agenda-form-grid">
+        <div class="f"><label>Técnico responsável</label><input type="text" id="ag-tecnico" placeholder="Nome do técnico"></div>
+        <div class="f"><label>Contato no cliente</label><input type="text" id="ag-contato" placeholder="Nome do responsável"></div>
+        <div class="f"><label>Telefone cliente</label><input type="text" id="ag-tel" placeholder="(11) 99999-9999"></div>
+        <div class="f"><label>Nº de veículos</label><input type="number" id="ag-veic" placeholder="0" min="0"></div>
+      </div>
+      <div class="fg c1" style="margin-bottom:10px">
+        <div class="f"><label>Observações</label><textarea id="ag-obs" placeholder="Instruções especiais, ponto de referência, acesso ao local..." style="min-height:60px"></textarea></div>
+      </div>
+      <div class="agenda-form-actions">
+        <button class="log-btn" onclick="toggleAgendaForm()">Cancelar</button>
+        <button class="log-btn" id="ag-save-btn" onclick="saveAgendamento()" style="background:var(--cobli-royal);color:#fff;border-color:var(--cobli-royal)">Salvar agendamento</button>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="agenda-filters">
+      <select id="ag-filter-status" onchange="renderAgenda()">
+        <option value="">Todos os status</option>
+        <option value="Agendado">Agendado</option>
+        <option value="Confirmado">Confirmado</option>
+        <option value="Realizado">Realizado</option>
+        <option value="No-show">No-show</option>
+        <option value="Cancelado">Cancelado</option>
+      </select>
+      <select id="ag-filter-periodo" onchange="renderAgenda()">
+        <option value="proximos">Próximos + hoje</option>
+        <option value="todos">Todos</option>
+        <option value="passados">Passados</option>
+      </select>
+    </div>
+
+    <div id="agenda-list"></div>
   </div>
 
   <div class="content" id="tab-form">
@@ -821,6 +919,7 @@ async function switchProject(id) {
   F = data?.form_json || {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
   G = data?.gantt_json || {startDate:'',endDate:'',tasks:[]};
   window._diarioLocal = data?.diario_json || [];
+  window._agendaLocal = data?.agenda_json || [];
 
   const isOwner = project?.owner_id === currentUser.id;
   const isGestor = userProfile?.role === 'gestor';
@@ -858,6 +957,7 @@ async function persist() {
     form_json: F,
     gantt_json: G,
     diario_json: window._diarioLocal,
+    agenda_json: window._agendaLocal,
     updated_at: new Date()
   });
   if (!error) setSaved('saved');
@@ -884,6 +984,7 @@ async function deleteProject(){
     F = {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
     G = {startDate:'',endDate:'',tasks:[]};
     window._diarioLocal = [];
+    window._agendaLocal = [];
     persist();
     syncFormFields(); loadG();
     return;
@@ -934,9 +1035,11 @@ function switchTab(tab,el){
   document.getElementById('tab-form').style.display = tab==='form'?'block':'none';
   document.getElementById('tab-gantt').style.display = tab==='gantt'?'block':'none';
   document.getElementById('tab-diario').style.display = tab==='diario'?'block':'none';
+  document.getElementById('tab-agenda').style.display = tab==='agenda'?'block':'none';
   document.getElementById('export-bar').style.display = tab==='dashboard'?'none':'flex';
   if(tab==='dashboard') renderDashboard();
   if(tab==='diario') renderDiario();
+  if(tab==='agenda') renderAgenda();
 }
 
 /* ─── GESTÃO DE USUÁRIOS COMPLETA ─── */
@@ -1872,6 +1975,203 @@ function msg(t){const el=document.getElementById('smsg');el.textContent=t;setTim
 
 document.getElementById('modal-input').addEventListener('keydown',ev=>{if(ev.key==='Enter')createProject();if(ev.key==='Escape')closeModal();});
 document.getElementById('modal-bg').addEventListener('click',ev=>{if(ev.target===document.getElementById('modal-bg'))closeModal();});
+
+
+/* ─── AGENDAMENTOS ─── */
+const AG_STATUS_CLASS = {
+  'Agendado':'as-agendado','Confirmado':'as-confirmado',
+  'Realizado':'as-realizado','No-show':'as-noshow','Cancelado':'as-cancelado'
+};
+const AG_CARD_CLASS = {
+  'Agendado':'status-agendado','Confirmado':'status-confirmado',
+  'Realizado':'status-realizado','No-show':'status-noshow','Cancelado':'status-cancelado'
+};
+
+function saveAgendaData(){ window._agendaLocal = window._agendaLocal || []; persist(); }
+
+function toggleAgendaForm(){
+  const form = document.getElementById('agenda-form');
+  const open = form.style.display !== 'none';
+  form.style.display = open ? 'none' : 'block';
+  if(!open){
+    document.getElementById('ag-data').value = new Date().toISOString().slice(0,10);
+    document.getElementById('ag-hora').value = '';
+    document.getElementById('ag-base').value = '';
+    document.getElementById('ag-status').value = 'Agendado';
+    document.getElementById('ag-tecnico').value = '';
+    document.getElementById('ag-contato').value = '';
+    document.getElementById('ag-tel').value = '';
+    document.getElementById('ag-veic').value = '';
+    document.getElementById('ag-obs').value = '';
+    document.getElementById('ag-save-btn').onclick = saveAgendamento;
+    document.getElementById('ag-save-btn').textContent = 'Salvar agendamento';
+    document.getElementById('ag-base').focus();
+  }
+}
+
+function saveAgendamento(){
+  const data    = document.getElementById('ag-data').value;
+  const hora    = document.getElementById('ag-hora').value;
+  const base    = document.getElementById('ag-base').value.trim();
+  const status  = document.getElementById('ag-status').value;
+  const tecnico = document.getElementById('ag-tecnico').value.trim();
+  const contato = document.getElementById('ag-contato').value.trim();
+  const tel     = document.getElementById('ag-tel').value.trim();
+  const veic    = document.getElementById('ag-veic').value;
+  const obs     = document.getElementById('ag-obs').value.trim();
+  if(!data || !base){ alert('Preencha ao menos a data e a base/local.'); return; }
+  const list = window._agendaLocal || [];
+  list.push({ id: uid(), data, hora, base, status, tecnico, contato, tel, veic: parseInt(veic)||0, obs, criadoEm: new Date().toISOString() });
+  list.sort((a,b) => a.data.localeCompare(b.data) || (a.hora||'').localeCompare(b.hora||''));
+  window._agendaLocal = list;
+  saveAgendaData();
+  toggleAgendaForm();
+  renderAgenda();
+}
+
+function editAgendamento(id){
+  const ag = (window._agendaLocal||[]).find(a=>a.id===id);
+  if(!ag) return;
+  document.getElementById('ag-data').value    = ag.data||'';
+  document.getElementById('ag-hora').value    = ag.hora||'';
+  document.getElementById('ag-base').value    = ag.base||'';
+  document.getElementById('ag-status').value  = ag.status||'Agendado';
+  document.getElementById('ag-tecnico').value = ag.tecnico||'';
+  document.getElementById('ag-contato').value = ag.contato||'';
+  document.getElementById('ag-tel').value     = ag.tel||'';
+  document.getElementById('ag-veic').value    = ag.veic||'';
+  document.getElementById('ag-obs').value     = ag.obs||'';
+  document.getElementById('agenda-form').style.display = 'block';
+  const saveBtn = document.getElementById('ag-save-btn');
+  saveBtn.textContent = 'Atualizar agendamento';
+  saveBtn.onclick = () => updateAgendamento(id);
+}
+
+function updateAgendamento(id){
+  const list = window._agendaLocal||[];
+  const idx = list.findIndex(a=>a.id===id);
+  if(idx<0) return;
+  list[idx] = { ...list[idx],
+    data:    document.getElementById('ag-data').value,
+    hora:    document.getElementById('ag-hora').value,
+    base:    document.getElementById('ag-base').value.trim(),
+    status:  document.getElementById('ag-status').value,
+    tecnico: document.getElementById('ag-tecnico').value.trim(),
+    contato: document.getElementById('ag-contato').value.trim(),
+    tel:     document.getElementById('ag-tel').value.trim(),
+    veic:    parseInt(document.getElementById('ag-veic').value)||0,
+    obs:     document.getElementById('ag-obs').value.trim(),
+    editadoEm: new Date().toISOString()
+  };
+  list.sort((a,b) => a.data.localeCompare(b.data) || (a.hora||'').localeCompare(b.hora||''));
+  window._agendaLocal = list;
+  saveAgendaData();
+  document.getElementById('agenda-form').style.display = 'none';
+  renderAgenda();
+}
+
+function changeAgStatus(id, newStatus){
+  const ag = (window._agendaLocal||[]).find(a=>a.id===id);
+  if(ag){ ag.status = newStatus; saveAgendaData(); renderAgenda(); }
+}
+
+function deleteAgendamento(id){
+  if(!confirm('Excluir este agendamento?')) return;
+  window._agendaLocal = (window._agendaLocal||[]).filter(a=>a.id!==id);
+  saveAgendaData(); renderAgenda();
+}
+
+function renderAgenda(){
+  let list = window._agendaLocal || [];
+  const filterStatus  = document.getElementById('ag-filter-status')?.value || '';
+  const filterPeriodo = document.getElementById('ag-filter-periodo')?.value || 'proximos';
+  const hoje = new Date().toISOString().slice(0,10);
+
+  // Stats
+  const total       = list.length;
+  const agendados   = list.filter(a=>a.status==='Agendado').length;
+  const confirmados = list.filter(a=>a.status==='Confirmado').length;
+  const realizados  = list.filter(a=>a.status==='Realizado').length;
+  const noshow      = list.filter(a=>a.status==='No-show').length;
+  const proximos7   = list.filter(a=>a.data>=hoje && a.data<=new Date(Date.now()+7*864e5).toISOString().slice(0,10)).length;
+
+  const statsEl = document.getElementById('agenda-stats');
+  if(statsEl) statsEl.innerHTML = `
+    <div class="agenda-stat"><span class="agenda-stat-num">${total}</span><span class="agenda-stat-label">total</span></div>
+    <div class="agenda-stat"><span class="agenda-stat-num" style="color:var(--cobli-royal)">${agendados+confirmados}</span><span class="agenda-stat-label">pendentes</span></div>
+    <div class="agenda-stat"><span class="agenda-stat-num" style="color:#854F0B">${proximos7}</span><span class="agenda-stat-label">próx. 7 dias</span></div>
+    <div class="agenda-stat"><span class="agenda-stat-num" style="color:var(--green-dark)">${realizados}</span><span class="agenda-stat-label">realizados</span></div>
+    ${noshow?`<div class="agenda-stat"><span class="agenda-stat-num" style="color:var(--red-dark)">${noshow}</span><span class="agenda-stat-label">no-show</span></div>`:''}
+  `;
+
+  // Badge na aba
+  const badge = document.getElementById('agenda-badge');
+  if(badge) badge.textContent = agendados + confirmados;
+
+  // Filtros
+  if(filterStatus) list = list.filter(a=>a.status===filterStatus);
+  if(filterPeriodo==='proximos') list = list.filter(a=>a.data>=hoje);
+  else if(filterPeriodo==='passados') list = list.filter(a=>a.data<hoje);
+
+  const listEl = document.getElementById('agenda-list');
+  if(!listEl) return;
+
+  if(!list.length){
+    const msg = total===0 ? 'Nenhum agendamento registrado.' : 'Nenhum agendamento com esses filtros.';
+    listEl.innerHTML = `<div class="agenda-empty"><p>${msg}</p>${total===0?'<button class="btn-ghost" onclick="toggleAgendaForm()">+ criar primeiro agendamento</button>':''}</div>`;
+    return;
+  }
+
+  const fmtDate = s => { if(!s)return '—'; const[y,m,d]=s.split('-'); return `${d}/${m}/${y}`; };
+  const fmtHora = s => s || '—';
+  const isPast  = s => s < hoje;
+
+  // Agrupa por mês
+  const grupos = {};
+  list.forEach(ag => {
+    const key = ag.data ? ag.data.slice(0,7) : 'sem-data';
+    if(!grupos[key]) grupos[key] = [];
+    grupos[key].push(ag);
+  });
+
+  let out = '';
+  Object.keys(grupos).sort().forEach(key => {
+    const [y,m] = key.split('-');
+    const meses = ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const titulo = m ? `${meses[+m]} ${y}` : 'Sem data';
+    out += `<div class="agenda-section-title">${titulo} · ${grupos[key].length} agendamento${grupos[key].length!==1?'s':''}</div>`;
+    grupos[key].forEach(ag => {
+      const sc = AG_STATUS_CLASS[ag.status]||'as-agendado';
+      const cc = AG_CARD_CLASS[ag.status]||'status-agendado';
+      const past = isPast(ag.data) && ag.status==='Agendado';
+      const statusOpts = ['Agendado','Confirmado','Realizado','No-show','Cancelado']
+        .map(s=>`<option value="${s}" ${ag.status===s?'selected':''}>${s}</option>`).join('');
+      out += `<div class="agenda-card ${cc}">
+        <div class="agenda-card-head">
+          <div class="agenda-date-badge ${past?'past':''}">${fmtDate(ag.data)}${ag.hora?' · '+fmtHora(ag.hora):''}</div>
+          <div class="agenda-base">${e(ag.base)||'Base não informada'}</div>
+          ${ag.veic?`<span style="font-size:11px;color:var(--text3);white-space:nowrap">${ag.veic} veículo${ag.veic!==1?'s':''}</span>`:''}
+          <select class="agenda-status-pill ${sc}" onchange="changeAgStatus('${ag.id}',this.value)" style="border:none;cursor:pointer;font-family:'Geist',sans-serif;font-weight:600;font-size:10px">
+            ${statusOpts}
+          </select>
+        </div>
+        <div class="agenda-card-body">
+          <div class="agenda-field"><label>Técnico</label><span>${e(ag.tecnico)||'—'}</span></div>
+          <div class="agenda-field"><label>Contato cliente</label><span>${e(ag.contato)||'—'}</span></div>
+          <div class="agenda-field"><label>Telefone</label><span>${e(ag.tel)||'—'}</span></div>
+          <div class="agenda-field"><label>Veículos</label><span>${ag.veic||'—'}</span></div>
+        </div>
+        ${ag.obs?`<div class="agenda-obs">"${e(ag.obs)}"</div>`:''}
+        <div class="agenda-actions">
+          <button class="log-btn" onclick="editAgendamento('${ag.id}')">✎ editar</button>
+          <button class="log-btn danger" onclick="deleteAgendamento('${ag.id}')">× excluir</button>
+        </div>
+      </div>`;
+    });
+  });
+
+  listEl.innerHTML = out;
+}
 
 /* ─── BOOT ─── */
 init();
