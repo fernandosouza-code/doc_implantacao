@@ -519,7 +519,7 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
         <option value="Entrega">Entrega</option>
         <option value="Outro">Outro</option>
       </select>
-      <select id="filter-status" onchange="renderDiario()">
+      <select id="filter-diario-status" onchange="renderDiario()">
         <option value="">Todos os status</option>
         <option value="Aberto">Aberto</option>
         <option value="Em andamento">Em andamento</option>
@@ -786,6 +786,10 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
     <button class="btn-export danger" id="btn-delete-proj" onclick="deleteProject()">Excluir projeto</button>
   </div>
 
+    <div class="welcome-title">Bem-vindo ao Cobli Implantação</div>
+    <div class="welcome-sub">Você ainda não tem nenhum projeto. Crie o seu primeiro projeto para começar a documentar a implantação de um cliente.</div>
+    <button class="welcome-btn" onclick="openNewModal()">+ Criar meu primeiro projeto</button>
+    <div class="welcome-hint">O projeto ficará disponível só para você, a menos que um gestor acesse.</div>
   </div>
 
 </div>
@@ -1226,11 +1230,11 @@ async function updateUserRole(uid, role) {
   msg("Nível atualizado!");
 }
 
-function resetPass(email) {
+function resetPass(email) { 
   supa.auth.resetPasswordForEmail(email, {
     redirectTo: 'https://fernandosouza-code.github.io/doc_implantacao/'
-  });
-  alert("Link de recuperação enviado para " + email);
+  }); 
+  alert("Link de recuperação enviado para " + email); 
 }
 
 function closeUserModal() { document.getElementById('user-modal').classList.remove('open'); }
@@ -1718,7 +1722,7 @@ function changeLogStatus(id, newStatus){
 function renderDiario(){
   let logs=window._diarioLocal || [];
   const filterTipo=document.getElementById('filter-tipo')?.value||'';
-  const filterStatus=document.getElementById('filter-status')?.value||'';
+  const filterStatus=document.getElementById('filter-diario-status')?.value||'';
   const search=(document.getElementById('filter-search')?.value||'').toLowerCase();
 
   const total=logs.length;
