@@ -786,11 +786,7 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
     <button class="btn-export danger" id="btn-delete-proj" onclick="deleteProject()">Excluir projeto</button>
   </div>
 
-    <div class="welcome-title">Bem-vindo ao Cobli Implantação</div>
-    <div class="welcome-sub">Você ainda não tem nenhum projeto. Crie o seu primeiro projeto para começar a documentar a implantação de um cliente.</div>
-    <button class="welcome-btn" onclick="openNewModal()">+ Criar meu primeiro projeto</button>
-    <div class="welcome-hint">O projeto ficará disponível só para você, a menos que um gestor acesse.</div>
-  </div>
+                  </div>
 
 </div>
 
@@ -874,13 +870,12 @@ async function init() {
   if (session) {
     currentUser = session.user;
 
-    // Garante que o perfil existe (ignora erros — não pode quebrar o login)
+    // Cria o perfil SOMENTE se não existir — nunca sobrescreve o role
     try {
-      await supa.from('profiles').upsert(
-        { id: currentUser.id, email: currentUser.email, role: 'usuario' },
-        { onConflict: 'id' }
-      );
-    } catch(e) { console.warn('profile upsert:', e); }
+      await supa.from('profiles')
+        .insert({ id: currentUser.id, email: currentUser.email, role: 'usuario' })
+        .select();
+    } catch(e) { /* perfil já existe — normal */ }
 
     const { data: profile } = await supa.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
     userProfile = profile;
@@ -1070,13 +1065,12 @@ async function createProject() {
       else { alert('Sessão expirada. Recarregue a página e faça login novamente.'); return; }
     }
 
-    // Garante que o perfil existe (resolve o erro de foreign key)
+    // Garante que o perfil existe (sem sobrescrever role)
     try {
-      await supa.from('profiles').upsert(
-        { id: currentUser.id, email: currentUser.email, role: userProfile?.role || 'usuario' },
-        { onConflict: 'id' }
-      );
-    } catch(e) { console.warn('profile upsert:', e); }
+      await supa.from('profiles')
+        .insert({ id: currentUser.id, email: currentUser.email, role: 'usuario' })
+        .select();
+    } catch(e) { /* perfil já existe — normal */ }
 
     const { data, error } = await supa.from('projects')
       .insert([{ name, owner_id: currentUser.id }])
