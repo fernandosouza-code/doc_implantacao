@@ -236,10 +236,6 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 .proj-row-val{font-weight:500;color:var(--text)}
 .proj-row-val.green{color:var(--green-dark)}
 .proj-row-val.red{color:var(--red-dark)}
-.prog-bar-wrap{margin-top:10px}
-.prog-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:4px}
-.prog-bar-track{height:6px;background:var(--gray100);border-radius:3px;overflow:hidden}
-.prog-bar-fill{height:100%;border-radius:3px;transition:width .4s}
 .fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
 .fin-card{background:#fff;border:1px solid var(--gray200);border-radius:var(--radius-lg);padding:14px 16px}
 .fin-card-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
@@ -250,10 +246,6 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 .fin-total{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;padding:8px 0;border-top:1.5px solid var(--gray200);margin-top:4px}
 .fin-total .green{color:var(--green-dark)}
 .fin-total .red{color:var(--red-dark)}
-.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
-.met-card{background:#fff;border:1px solid var(--gray200);border-radius:var(--radius-lg);padding:12px 14px;text-align:center}
-.met-val{font-size:22px;font-weight:600;color:var(--navy);margin-bottom:2px}
-.met-label{font-size:11px;color:var(--text3)}
 .gantt-dash{background:#fff;border:1px solid var(--gray200);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:24px}
 .gantt-dash-head{padding:12px 16px;border-bottom:1px solid var(--gray200);display:flex;align-items:center;justify-content:space-between}
 .gantt-dash-title{font-size:13px;font-weight:600;color:var(--navy)}
@@ -544,37 +536,6 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-head" onclick="toggleCard(this)">
-        <div class="card-num">7</div><div class="card-title">Métricas de resultado</div><div class="card-chev">▾</div>
-      </div>
-      <div class="card-body">
-        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Métricas de resultado</strong>Mede a qualidade da execução e serve de benchmark para projetos futuros.<ul><li><b>Teste Cobli:</b> % de dispositivos aprovados — meta 100%</li><li><b>Qtd. visitas:</b> total de visitas às bases</li><li><b>No-show técnico/cliente:</b> % de visitas improdutivas</li><li><b>Tempo médio:</b> referência para cotar projetos futuros</li></ul></div></div>
-        <div class="fg c3">
-          <div class="f"><label>Teste Cobli instalador (%)</label><input type="number" id="m-teste" onchange="saveF()"></div>
-          <div class="f"><label>Qtd. visitas</label><input type="number" id="m-visitas" onchange="saveF()"></div>
-          <div class="f"><label>No-show técnico (%)</label><input type="number" id="m-nst" onchange="saveF()"></div>
-        </div>
-        <div class="fg c2">
-          <div class="f"><label>No-show cliente (%)</label><input type="number" id="m-nsc" onchange="saveF()"></div>
-          <div class="f"><label>Tempo médio de instalação</label><input id="m-tempo" placeholder="Ex: 4 horas" onchange="saveF()"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head" onclick="toggleCard(this)">
-        <div class="card-num">8</div><div class="card-title">Lições aprendidas</div><div class="card-chev">▾</div>
-      </div>
-      <div class="card-body">
-        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Lições aprendidas</strong>A memória institucional do time — garante que o próximo líder chegue com as melhores práticas na mão.<ul><li><b>Forças:</b> o que funcionou bem e deve ser repetido</li><li><b>Desafios:</b> problemas encontrados e como foram resolvidos</li><li><b>Recomendações:</b> sugestões para a próxima implantação</li></ul></div></div>
-        <div class="fg c1">
-          <div class="f"><label>O que funcionou bem — forças</label><textarea id="l-forca" onchange="saveF()"></textarea></div>
-          <div class="f"><label>Desafios identificados</label><textarea id="l-desaf" onchange="saveF()"></textarea></div>
-          <div class="f"><label>Recomendações para próximas implantações</label><textarea id="l-rec" onchange="saveF()"></textarea></div>
-        </div>
-      </div>
-    </div>
 
   </div><div class="content" id="tab-gantt" style="display:none">
     <div class="gantt-toolbar">
@@ -1194,8 +1155,6 @@ function syncFormFields() {
   set('f-status', d.projectStatus||'Em Andamento');
   ['total','tipo','custom'].forEach(k=>set('fr-'+k,d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]));
   set('c-obs',d.cObs);
-  ['teste','visitas','nst','nsc','tempo'].forEach(k=>set('m-'+k,d['m'+k.charAt(0).toUpperCase()+k.slice(1)]));
-  ['forca','desaf','rec'].forEach(k=>set('l-'+k,d['l'+k.charAt(0).toUpperCase()+k.slice(1)]));
   renderStk(); renderMatriz(); renderBases(); renderRisks(); renderCosts(); renderFrPlanilha();
 }
 
@@ -1254,13 +1213,11 @@ function renderFrPlanilha(){
 }
 
 function saveF(){
-  const d={};
+  const d={...(F.dados||{})};
   ['nome','resp','pat','prod','data','prazo','crit','obj','entrega'].forEach(k=>d[k]=getVal('f-'+k));
   d.projectStatus = getVal('f-status') || 'Em Andamento';
   ['total','tipo','custom'].forEach(k=>d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('fr-'+k));
   d.cObs=getVal('c-obs');
-  ['teste','visitas','nst','nsc','tempo'].forEach(k=>d['m'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('m-'+k));
-  ['forca','desaf','rec'].forEach(k=>d['l'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('l-'+k));
   F.dados=d;
   persist();
 }
@@ -1513,33 +1470,24 @@ function attachDrag(){
 }
 
 /* ─── DASHBOARD ─── */
-function projStatus(f,g){
-  const tasks=g.tasks.filter(t=>t.type==='task');
-  if(!tasks.length&&!f.dados.nome) return 'new';
-  const late=tasks.filter(t=>t.status==='atrasado').length;
-  const done=tasks.filter(t=>t.status==='realizado').length;
-  if(late>0) return 'late';
-  if(tasks.length>0&&done===tasks.length) return 'ok';
-  const prazo=parseInt(f.dados.prazo)||30;
+/* Status do mapeamento: baseado no campo manual "Status do projeto" + prazo — não depende
+   mais de execução de tarefas (Field Engineering não atua mais na operação). */
+function mappingStatus(f){
+  if(!f.dados?.nome) return 'new';
+  const st=f.dados.projectStatus||'Em Andamento';
+  if(st==='Projeto Finalizado') return 'done';
+  if(st==='Aguardando Aprovação') return 'aguardando';
   const start=f.dados.data?new Date(f.dados.data+'T00:00:00'):null;
+  const prazo=parseInt(f.dados.prazo)||30;
   if(start){
     const end=new Date(start);end.setDate(end.getDate()+prazo);
-    const now=new Date();
-    const pct=(now-start)/(end-start)*100;
-    const donePct=tasks.length?done/tasks.length*100:0;
-    if(pct>donePct+20) return 'risk';
+    if(new Date()>end) return 'late';
   }
-  return 'progress';
+  return 'andamento';
 }
 
-function projProgress(g){
-  const tasks=g.tasks.filter(t=>t.type==='task');
-  if(!tasks.length) return 0;
-  return Math.round(tasks.filter(t=>t.status==='realizado').length/tasks.length*100);
-}
-
-function statusLabel(s){ return {ok:'Concluído',late:'Atrasado',risk:'Em risco',progress:'Em andamento',new:'Novo'}[s]||s; }
-function statusClass(s){ return {ok:'sp-ok',late:'sp-late',risk:'sp-risk',progress:'sp-ok',new:'sp-new'}[s]||'sp-new'; }
+function statusLabel(s){ return {done:'Projeto Finalizado',aguardando:'Aguardando Aprovação',late:'Atrasado',andamento:'Em Andamento',new:'Novo'}[s]||s; }
+function statusClass(s){ return {done:'sp-ok',aguardando:'sp-risk',late:'sp-late',andamento:'sp-new',new:'sp-new'}[s]||'sp-new'; }
 
 function updateDashFilter(){
   const sel=document.getElementById('dash-filter');
@@ -1570,12 +1518,12 @@ async function renderDashboard(){
   });
 
   const totalProj=allData.length;
-  const lateCount=allData.filter(({f,g})=>projStatus(f,g)==='late').length;
-  const riskCount=allData.filter(({f,g})=>projStatus(f,g)==='risk').length;
+  const lateCount=allData.filter(({f})=>mappingStatus(f)==='late').length;
+  const aguardandoCount=allData.filter(({f})=>mappingStatus(f)==='aguardando').length;
   const totalCustos=allData.reduce((s,{f})=>s+f.costs.filter(c=>c.cat!=='Adesão').reduce((a,c)=>a+(parseFloat(c.val)||0),0),0);
   const totalAdesao=allData.reduce((s,{f})=>s+f.costs.filter(c=>c.cat==='Adesão').reduce((a,c)=>a+(parseFloat(c.val)||0),0),0);
   const saldo=totalAdesao-totalCustos;
-  const avgProgress=Math.round(allData.reduce((s,{g})=>s+projProgress(g),0)/totalProj);
+  const totalFrota=allData.reduce((s,{f})=>s+(parseFloat(f.dados.frTotal)||0),0);
 
   let html=`
   <div class="dash-section-title">Visão geral</div>
@@ -1583,12 +1531,12 @@ async function renderDashboard(){
     <div class="kpi-card accent-blue">
       <div class="kpi-label">Projetos ativos</div>
       <div class="kpi-value">${totalProj}</div>
-      <div class="kpi-sub">${lateCount} atrasado${lateCount!==1?'s':''} · ${riskCount} em risco</div>
+      <div class="kpi-sub">${lateCount} atrasado${lateCount!==1?'s':''} · ${aguardandoCount} aguardando aprovação</div>
     </div>
     <div class="kpi-card accent-green">
-      <div class="kpi-label">Progresso médio</div>
-      <div class="kpi-value">${avgProgress}%</div>
-      <div class="kpi-sub">tarefas realizadas vs. total</div>
+      <div class="kpi-label">Frota mapeada</div>
+      <div class="kpi-value">${totalFrota}</div>
+      <div class="kpi-sub">veículos no escopo técnico</div>
     </div>
     <div class="kpi-card accent-navy">
       <div class="kpi-label">Receita de adesão</div>
@@ -1606,7 +1554,7 @@ async function renderDashboard(){
   <div class="gantt-dash">
     <div class="gantt-dash-head">
       <div class="gantt-dash-title">Projetos no tempo</div>
-      <div style="font-size:11px;color:var(--text3)">Barra = duração planejada · Linha vermelha = hoje</div>
+      <div style="font-size:11px;color:var(--text3)">Barra = janela do mapeamento (data de início + prazo) · Linha vermelha = hoje</div>
     </div>`;
 
   const now=new Date();now.setHours(0,0,0,0);
@@ -1626,10 +1574,10 @@ async function renderDashboard(){
   if(allData.every(({f})=>!f.dados.data)){
     html+=`<div class="empty-dash" style="padding:1.5rem">Preencha a data de início nos projetos para ver o cronograma.</div>`;
   } else {
-    allData.forEach(({p,f,g})=>{
+    allData.forEach(({p,f})=>{
       const st=f.dados.data?new Date(f.dados.data+'T00:00:00'):null;
       const pr=parseInt(f.dados.prazo)||30;
-      const status=projStatus(f,g);
+      const status=mappingStatus(f);
       if(!st){
         html+=`<div class="timeline-item"><div class="tl-name" title="${e(p.name)}">${e(p.name)}</div><div class="tl-bar-wrap"><div style="font-size:10px;color:var(--text3);padding:4px">Sem data definida</div></div><div class="tl-dates">—</div></div>`;
         return;
@@ -1637,8 +1585,7 @@ async function renderDashboard(){
       const en=new Date(st);en.setDate(en.getDate()+pr);
       const left=Math.max(0,(st-minD)/864e5/span*100);
       const width=Math.min(100-left,(en-st)/864e5/span*100);
-      const prog=projProgress(g);
-      const barClass={ok:'ok',late:'late',risk:'risk',progress:'new',new:'new'}[status]||'new';
+      const barClass={done:'ok',late:'late',aguardando:'risk',andamento:'new',new:'new'}[status]||'new';
       html+=`<div class="timeline-item">
         <div class="tl-name" title="${e(p.name)}">${e(p.name)}</div>
         <div class="tl-bar-wrap">
@@ -1652,19 +1599,12 @@ async function renderDashboard(){
   html+=`</div>`;
 
   html+=`<div class="dash-section-title">Status por projeto</div><div class="proj-cards">`;
-  allData.forEach(({p,f,g})=>{
-    const status=projStatus(f,g);
-    const prog=projProgress(g);
+  allData.forEach(({p,f})=>{
+    const status=mappingStatus(f);
     const custos=f.costs.filter(c=>c.cat!=='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
     const adesao=f.costs.filter(c=>c.cat==='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
     const dif=adesao-custos;
-    const tasks=g.tasks.filter(t=>t.type==='task');
-    const done=tasks.filter(t=>t.status==='realizado').length;
-    const late=tasks.filter(t=>t.status==='atrasado').length;
     const frota=parseFloat(f.dados.frTotal)||0;
-    const nst=f.dados.mNst?parseFloat(f.dados.mNst):null;
-    const nsc=f.dados.mNsc?parseFloat(f.dados.mNsc):null;
-    const barColor=status==='late'?'var(--red)':status==='risk'?'#EF9F27':status==='ok'?'var(--green)':'var(--blue)';
     html+=`<div class="proj-card">
       <div class="proj-card-head">
         <div class="proj-card-name" title="${e(p.name)}">${e(p.name)}</div>
@@ -1673,16 +1613,8 @@ async function renderDashboard(){
       <div class="proj-card-body">
         <div class="proj-row"><span class="proj-row-label">Responsável</span><span class="proj-row-val">${f.dados.resp||'—'}</span></div>
         <div class="proj-row"><span class="proj-row-label">Frota</span><span class="proj-row-val">${frota||'—'} veículos</span></div>
-        <div class="proj-row"><span class="proj-row-label">Tarefas</span><span class="proj-row-val">${done}/${tasks.length} concluídas${late?' · '+late+' atrasada'+(late>1?'s':''):''}</span></div>
         <div class="proj-row"><span class="proj-row-label">Prazo</span><span class="proj-row-val">${f.dados.data||'—'}${f.dados.prazo?' · '+f.dados.prazo+'d':''}</span></div>
         <div class="proj-row"><span class="proj-row-label">Saldo financeiro</span><span class="proj-row-val ${dif>=0?'green':'red'}">${brl(dif)}</span></div>
-        ${nst!==null?`<div class="proj-row"><span class="proj-row-label">No-show técnico</span><span class="proj-row-val">${nst}%</span></div>`:''}
-        ${nsc!==null?`<div class="proj-row"><span class="proj-row-label">No-show cliente</span><span class="proj-row-val">${nsc}%</span></div>`:''}
-        ${f.dados.mTempo?`<div class="proj-row"><span class="proj-row-label">Tempo médio inst.</span><span class="proj-row-val">${f.dados.mTempo}</span></div>`:''}
-        <div class="prog-bar-wrap">
-          <div class="prog-bar-label"><span>Progresso</span><span>${prog}%</span></div>
-          <div class="prog-bar-track"><div class="prog-bar-fill" style="width:${prog}%;background:${barColor}"></div></div>
-        </div>
       </div>
     </div>`;
   });
@@ -1706,18 +1638,6 @@ async function renderDashboard(){
     html+=`<div class="fin-row"><span class="fin-row-label" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e(p.name)}</span><span class="fin-row-val" style="color:${d>=0?'var(--green-dark)':'var(--red-dark)'}">${brl(d)}</span></div>`;
   });
   html+=`<div class="fin-total"><span>${saldo>=0?'Saldo total':'Déficit total'}</span><span class="${saldo>=0?'green':'red'}">${brl(Math.abs(saldo))}</span></div></div></div>`;
-
-  const metProjs=allData.filter(({f})=>f.dados.mTeste||f.dados.mVisitas||f.dados.mNst||f.dados.mNsc||f.dados.mTempo);
-  if(metProjs.length){
-    html+=`<div class="dash-section-title">Métricas operacionais</div><div class="metrics-grid">`;
-    const avg=key=>{ const vals=metProjs.map(({f})=>parseFloat(f.dados[key])).filter(v=>!isNaN(v)); return vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):null; };
-    const avgTeste=avg('mTeste'),avgNst=avg('mNst'),avgNsc=avg('mNsc'),avgVisitas=avg('mVisitas');
-    if(avgTeste!==null) html+=`<div class="met-card"><div class="met-val">${avgTeste}%</div><div class="met-label">Teste Cobli (média)</div></div>`;
-    if(avgVisitas!==null) html+=`<div class="met-card"><div class="met-val">${avgVisitas}</div><div class="met-label">Visitas (média)</div></div>`;
-    if(avgNst!==null) html+=`<div class="met-card"><div class="met-val">${avgNst}%</div><div class="met-label">No-show técnico</div></div>`;
-    if(avgNsc!==null) html+=`<div class="met-card"><div class="met-val">${avgNsc}%</div><div class="met-label">No-show cliente</div></div>`;
-    html+=`</div>`;
-  }
 
   document.getElementById('dash-body').innerHTML=html;
 }
@@ -1743,8 +1663,6 @@ function exportXLSX(){
   const adesao=F.costs.filter(c=>c.cat==='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
   cr.push(['','','','',''],['Total custos','','',custos,''],['Adesão','','',adesao,''],['Diferença','','',adesao-custos,'']);
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cr),'Custos');
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Métrica','Resultado'],['Teste Cobli (%)',d.mTeste],['Visitas',d.mVisitas],['No-show técnico (%)',d.mNst],['No-show cliente (%)',d.mNsc],['Tempo médio',d.mTempo]]),'Métricas');
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Seção','Conteúdo'],['Forças',d.lForca],['Desafios',d.lDesaf],['Recomendações',d.lRec]]),'Aprendizados');
   const gr=[['Tarefa','Base','Início Planejado','Fim Planejado','Início Executado','Fim Executado','Status']];
   G.tasks.forEach(t=>{
     if(t.type==='phase'){gr.push([`— ${t.name}`,'','','','','','']);return;}
@@ -1833,12 +1751,6 @@ function exportPDF(mode='interno'){
 
   if(!isCliente){
     body+=`${sec('Custos da implantação')}<table><thead><tr><th>Descrição</th><th>Categoria</th><th>Status</th><th style="text-align:right">Valor</th><th>Data</th></tr></thead><tbody>${cH}</tbody></table><div class="totals"><div class="tc"><div class="tc-label">Total custos</div><div class="tc-val">${brl(custos)}</div></div><div class="tc nav"><div class="tc-label">Valor de adesão</div><div class="tc-val">${brl(adesao)}</div></div><div class="tc ${dif>=0?'pos':'neg'}"><div class="tc-label">${dif>=0?'Saldo positivo':'Déficit'}</div><div class="tc-val">${brl(Math.abs(dif))}</div></div></div>`;
-  }
-
-  body+=`${sec('Métricas de resultado')}<div class="kv"><div class="k">Teste Cobli instalador</div><div class="v">${d.mTeste||''}%</div><div class="k">Qtd. de visitas</div><div class="v">${d.mVisitas||''}</div><div class="k">No-show técnico</div><div class="v">${d.mNst||''}%</div><div class="k">No-show cliente</div><div class="v">${d.mNsc||''}%</div><div class="k">Tempo médio instalação</div><div class="v">${d.mTempo||''}</div></div>`;
-
-  if(!isCliente){
-    body+=`${sec('Lições aprendidas')}<p style="font-weight:bold;font-size:11px;margin-bottom:4px">Forças</p><pre style="margin-bottom:10px">${d.lForca||''}</pre><p style="font-weight:bold;font-size:11px;margin-bottom:4px">Desafios</p><pre style="margin-bottom:10px">${d.lDesaf||''}</pre><p style="font-weight:bold;font-size:11px;margin-bottom:4px">Recomendações</p><pre>${d.lRec||''}</pre>`;
   }
 
   body+=`<div class="footer">Cobli · Field Engineering · Documento gerado automaticamente</div>`;
