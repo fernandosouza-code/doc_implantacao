@@ -146,43 +146,6 @@ table.itbl td input:disabled,table.itbl td select:disabled{color:var(--text3);cu
 
 /* GANTT */
 
-/* ─── AGENDAMENTOS ─── */
-.agenda-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-.agenda-stat-bar{display:flex;gap:8px;flex-wrap:wrap}
-.agenda-stat{background:#fff;border:1px solid var(--gray200);border-radius:var(--radius);padding:8px 14px;font-size:12px;display:flex;align-items:center;gap:6px}
-.agenda-stat-num{font-size:16px;font-weight:600;color:var(--navy)}
-.agenda-stat-label{color:var(--text3)}
-.agenda-form-card{background:#fff;border:2px dashed var(--cobli-royal);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px}
-.agenda-form-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px}
-.agenda-form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.agenda-form-actions{display:flex;gap:8px;justify-content:flex-end}
-.agenda-card{background:#fff;border:1px solid var(--gray200);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;transition:box-shadow .15s}
-.agenda-card:hover{box-shadow:0 2px 12px rgba(7,7,78,.07)}
-.agenda-card.status-realizado{border-left:3px solid var(--green)}
-.agenda-card.status-noshow{border-left:3px solid var(--red)}
-.agenda-card.status-confirmado{border-left:3px solid #EF9F27}
-.agenda-card.status-agendado{border-left:3px solid var(--cobli-royal)}
-.agenda-card.status-cancelado{border-left:3px solid var(--gray400);opacity:.7}
-.agenda-card-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--gray100);flex-wrap:wrap}
-.agenda-date-badge{background:var(--cobli-indigo);color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;white-space:nowrap}
-.agenda-date-badge.past{background:var(--gray400)}
-.agenda-base{font-size:13px;font-weight:600;color:var(--navy);flex:1}
-.agenda-status-pill{font-size:10px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap;border:none;cursor:pointer;font-family:'Geist',sans-serif;margin-left:auto}
-.as-agendado{background:var(--blue10);color:var(--cobli-royal)}
-.as-confirmado{background:#faeeda;color:#633806}
-.as-realizado{background:var(--green10);color:var(--green-dark)}
-.as-noshow{background:#fff0ee;color:var(--red-dark)}
-.as-cancelado{background:var(--gray100);color:var(--gray600)}
-.agenda-card-body{display:grid;grid-template-columns:repeat(4,1fr);gap:6px 16px;padding:10px 14px;font-size:12px}
-.agenda-field label{font-size:10px;color:var(--text3);font-weight:500;display:block;margin-bottom:2px}
-.agenda-field span{color:var(--text);font-weight:500}
-.agenda-obs{padding:6px 14px 10px;font-size:12px;color:var(--text2);border-top:1px solid var(--gray100);font-style:italic}
-.agenda-actions{display:flex;gap:6px;padding:8px 14px;justify-content:flex-end;border-top:1px solid var(--gray100)}
-.agenda-empty{text-align:center;padding:3rem;color:var(--text3);font-size:13px}
-.agenda-filters{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.agenda-filters select{font-family:'Geist',sans-serif;font-size:12px;padding:5px 9px;border:1px solid var(--gray200);border-radius:var(--radius);background:#fff;color:var(--text)}
-.agenda-section-title{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--gray200)}
-
 .gantt-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
 .gantt-toolbar label{font-size:12px;color:var(--text2)}
 .gantt-toolbar input[type=date],.gantt-toolbar input[type=number]{font-size:12px;font-family:'Geist',sans-serif;padding:6px 9px;border:1px solid var(--gray200);border-radius:var(--radius);background:var(--gray50);color:var(--text)}
@@ -242,45 +205,6 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 .btn-export.danger:hover{border-color:var(--red);background:#fff0ee}
 .smsg{font-size:12px;color:var(--green-dark)}
 
-/* DIÁRIO DE BORDO */
-.diario-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-.diario-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.diario-filters select,.diario-filters input{font-family:'Geist',sans-serif;font-size:12px;padding:5px 9px;border:1px solid var(--gray200);border-radius:var(--radius);background:#fff;color:var(--text)}
-.diario-filters input{width:180px}
-.diario-empty{text-align:center;padding:3rem;color:var(--text3);font-size:13px}
-.diario-empty p{margin-bottom:12px}
-.log-card{background:#fff;border:1px solid var(--gray200);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;transition:box-shadow .15s}
-.log-card:hover{box-shadow:0 2px 12px rgba(7,7,78,.07)}
-.log-card-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--gray100)}
-.log-date{font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap}
-.log-type-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;flex-shrink:0}
-.lt-problema{background:#fff0ee;color:var(--red-dark)}
-.lt-visita{background:var(--blue10);color:var(--blue)}
-.lt-decisao{background:#faeeda;color:#633806}
-.lt-contato{background:var(--green10);color:var(--green-dark)}
-.lt-entrega{background:#EEEDFE;color:#3C3489}
-.lt-outro{background:var(--gray100);color:var(--gray600)}
-.log-status-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;margin-left:auto;flex-shrink:0}
-.ls-aberto{background:#fff0ee;color:var(--red-dark)}
-.ls-andamento{background:#faeeda;color:#633806}
-.ls-resolvido{background:var(--green10);color:var(--green-dark)}
-.log-resp{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
-.log-card-body{padding:10px 14px}
-.log-desc{font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap}
-.log-actions{display:flex;gap:6px;margin-top:8px;justify-content:flex-end}
-.log-btn{font-size:11px;font-family:'Geist',sans-serif;padding:3px 10px;border-radius:var(--radius);cursor:pointer;border:1px solid var(--gray200);background:#fff;color:var(--text2)}
-.log-btn:hover{background:var(--gray50)}
-.log-btn.danger:hover{color:var(--red);border-color:var(--red);background:#fff0ee}
-.log-form-card{background:#fff;border:2px dashed var(--blue);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px}
-.log-form-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px}
-.log-form-desc{margin-bottom:10px}
-.log-form-desc textarea{width:100%;font-family:'Geist',sans-serif;font-size:13px;padding:8px 10px;border:1px solid var(--gray200);border-radius:var(--radius);background:var(--gray50);color:var(--text);resize:vertical;min-height:80px}
-.log-form-desc textarea:focus{outline:none;border-color:var(--blue);background:#fff}
-.log-form-actions{display:flex;gap:8px;justify-content:flex-end}
-.log-stat-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.log-stat{background:#fff;border:1px solid var(--gray200);border-radius:var(--radius);padding:8px 14px;font-size:12px;display:flex;align-items:center;gap:6px}
-.log-stat-num{font-size:16px;font-weight:600;color:var(--navy)}
-.log-stat-label{color:var(--text3)}
 .dash-content{flex:1;padding:20px 24px;overflow-y:auto;background:#f0f2fa}
 .dash-filter{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
 .dash-filter label{font-size:12px;color:var(--text2);font-weight:500}
@@ -464,72 +388,9 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
     <div class="tab" onclick="switchTab('dashboard',this)">Dashboard</div>
     <div class="tab active" onclick="switchTab('form',this)">Documentação do projeto</div>
     <div class="tab" onclick="switchTab('gantt',this)">Cronograma Gantt</div>
-    <div class="tab" onclick="switchTab('diario',this)" style="display:flex;align-items:center;gap:6px">Diário de Bordo <span style="font-size:9px;font-weight:600;background:#faeeda;color:#633806;padding:1px 6px;border-radius:999px">Interno</span></div>
-    <div class="tab" onclick="switchTab('agenda',this)" style="display:flex;align-items:center;gap:6px">Agendamentos <span style="font-size:9px;font-weight:600;background:var(--blue10);color:var(--cobli-royal);padding:1px 6px;border-radius:999px" id="agenda-badge">0</span></div>
-    
+
     <div style="flex: 1;"></div>
     <div id="project-owner-info" style="display:flex; align-items:center; font-size:11px; color:var(--text3);"></div>
-  </div>
-
-  <div class="content" id="tab-diario" style="display:none">
-    <div class="diario-header">
-      <div class="log-stat-bar" id="log-stats"></div>
-      <button class="btn-ghost" onclick="toggleLogForm()" id="btn-add-log" style="background:var(--navy);color:#fff;border-color:var(--navy)">+ novo registro</button>
-    </div>
-
-    <div class="log-form-card" id="log-form" style="display:none">
-      <div class="log-form-grid">
-        <div class="f"><label>Data</label><input type="date" id="log-data"></div>
-        <div class="f"><label>Tipo</label>
-          <select id="log-tipo">
-            <option value="Problema">Problema</option>
-            <option value="Visita">Visita</option>
-            <option value="Decisão">Decisão</option>
-            <option value="Contato com cliente">Contato com cliente</option>
-            <option value="Entrega">Entrega</option>
-            <option value="Outro">Outro</option>
-          </select>
-        </div>
-        <div class="f"><label>Responsável</label><input type="text" id="log-resp" placeholder="Nome de quem registra"></div>
-        <div class="f"><label>Status</label>
-          <select id="log-status">
-            <option value="Aberto">Aberto</option>
-            <option value="Em andamento">Em andamento</option>
-            <option value="Resolvido">Resolvido</option>
-          </select>
-        </div>
-      </div>
-      <div class="log-form-desc">
-        <div class="f"><label>Descrição do ocorrido</label>
-          <textarea id="log-desc" placeholder="Descreva o que aconteceu, decisões tomadas, próximos passos..."></textarea>
-        </div>
-      </div>
-      <div class="log-form-actions">
-        <button class="log-btn" onclick="toggleLogForm()">Cancelar</button>
-        <button class="log-btn" onclick="saveLog()" style="background:var(--navy);color:#fff;border-color:var(--navy)">Salvar registro</button>
-      </div>
-    </div>
-
-    <div class="diario-filters" style="margin-bottom:14px">
-      <select id="filter-tipo" onchange="renderDiario()">
-        <option value="">Todos os tipos</option>
-        <option value="Problema">Problema</option>
-        <option value="Visita">Visita</option>
-        <option value="Decisão">Decisão</option>
-        <option value="Contato com cliente">Contato com cliente</option>
-        <option value="Entrega">Entrega</option>
-        <option value="Outro">Outro</option>
-      </select>
-      <select id="filter-diario-status" onchange="renderDiario()">
-        <option value="">Todos os status</option>
-        <option value="Aberto">Aberto</option>
-        <option value="Em andamento">Em andamento</option>
-        <option value="Resolvido">Resolvido</option>
-      </select>
-      <input type="text" id="filter-search" placeholder="Buscar nos registros..." oninput="renderDiario()" style="width:200px">
-    </div>
-
-    <div id="log-list"></div>
   </div>
 
   <div class="dash-content" id="tab-dashboard" style="display:none">
@@ -540,65 +401,6 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       </select>
     </div>
     <div id="dash-body"></div>
-  </div>
-
-
-  <div class="content" id="tab-agenda" style="display:none">
-
-    <div class="agenda-header">
-      <div class="agenda-stat-bar" id="agenda-stats"></div>
-      <button class="btn-ghost" onclick="toggleAgendaForm()" id="btn-add-agenda" style="background:var(--cobli-royal);color:#fff;border-color:var(--cobli-royal)">+ novo agendamento</button>
-    </div>
-
-    <!-- Formulário -->
-    <div class="agenda-form-card" id="agenda-form" style="display:none">
-      <div class="agenda-form-grid">
-        <div class="f"><label>Data</label><input type="date" id="ag-data"></div>
-        <div class="f"><label>Horário</label><input type="time" id="ag-hora"></div>
-        <div class="f"><label>Base / Local</label><input type="text" id="ag-base" placeholder="Ex: Base SP - Matriz"></div>
-        <div class="f"><label>Status</label>
-          <select id="ag-status">
-            <option value="Agendado">Agendado</option>
-            <option value="Confirmado">Confirmado</option>
-            <option value="Realizado">Realizado</option>
-            <option value="No-show">No-show</option>
-            <option value="Cancelado">Cancelado</option>
-          </select>
-        </div>
-      </div>
-      <div class="agenda-form-grid">
-        <div class="f"><label>Técnico responsável</label><input type="text" id="ag-tecnico" placeholder="Nome do técnico"></div>
-        <div class="f"><label>Contato no cliente</label><input type="text" id="ag-contato" placeholder="Nome do responsável"></div>
-        <div class="f"><label>Telefone cliente</label><input type="text" id="ag-tel" placeholder="(11) 99999-9999"></div>
-        <div class="f"><label>Nº de veículos</label><input type="number" id="ag-veic" placeholder="0" min="0"></div>
-      </div>
-      <div class="fg c1" style="margin-bottom:10px">
-        <div class="f"><label>Observações</label><textarea id="ag-obs" placeholder="Instruções especiais, ponto de referência, acesso ao local..." style="min-height:60px"></textarea></div>
-      </div>
-      <div class="agenda-form-actions">
-        <button class="log-btn" onclick="toggleAgendaForm()">Cancelar</button>
-        <button class="log-btn" id="ag-save-btn" onclick="saveAgendamento()" style="background:var(--cobli-royal);color:#fff;border-color:var(--cobli-royal)">Salvar agendamento</button>
-      </div>
-    </div>
-
-    <!-- Filtros -->
-    <div class="agenda-filters">
-      <select id="ag-filter-status" onchange="renderAgenda()">
-        <option value="">Todos os status</option>
-        <option value="Agendado">Agendado</option>
-        <option value="Confirmado">Confirmado</option>
-        <option value="Realizado">Realizado</option>
-        <option value="No-show">No-show</option>
-        <option value="Cancelado">Cancelado</option>
-      </select>
-      <select id="ag-filter-periodo" onchange="renderAgenda()">
-        <option value="proximos">Próximos + hoje</option>
-        <option value="todos">Todos</option>
-        <option value="passados">Passados</option>
-      </select>
-    </div>
-
-    <div id="agenda-list"></div>
   </div>
 
   <div class="content" id="tab-form">
@@ -669,14 +471,12 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
         <div class="card-num">3</div><div class="card-title">Levantamento da frota</div><div class="card-chev">▾</div>
       </div>
       <div class="card-body">
-        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Levantamento da frota</strong>Define o escopo técnico — base para custo, prazo e alocação de técnicos.<ul><li><b>Total e cancelados:</b> controla a quantidade real de instalações</li><li><b>Tipo/modelo:</b> cada modelo pode exigir instalação diferente</li><li><b>Customizações:</b> tudo que foge do padrão — alinhe antes com os técnicos</li></ul></div></div>
-        <div class="fg c3">
-          <div class="f"><label>Total contratado</label><input type="number" id="fr-total" onchange="saveF();calcFinal()"></div>
-          <div class="f"><label>Cancelados</label><input type="number" id="fr-cancel" onchange="saveF();calcFinal()"></div>
-          <div class="f"><label>Finalizando</label><input id="fr-final" readonly style="background:var(--gray100);color:var(--text3)"></div>
+        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Levantamento da frota</strong>Preenchido uma única vez pelo consultor de Field Engineering, no mapeamento técnico com o cliente — serve de checklist para o time de CX executar a implantação e não é atualizado ao longo do projeto.<ul><li><b>Total contratado:</b> define o escopo técnico — base para custo, prazo e alocação de técnicos</li><li><b>Tipo/modelo:</b> cada modelo pode exigir instalação diferente</li><li><b>Customizações:</b> tudo que foge do padrão — alinhe antes com os técnicos</li></ul></div></div>
+        <div class="fg c2">
+          <div class="f"><label>Total contratado</label><input type="number" id="fr-total" onchange="saveF()"></div>
+          <div class="f"><label>Tipo / Marca / Modelo</label><input id="fr-tipo" placeholder="Ex: 29 Truck | 15 Cavalo | 4 3/4" onchange="saveF()"></div>
         </div>
         <div class="fg c1">
-          <div class="f"><label>Tipo / Marca / Modelo</label><input id="fr-tipo" placeholder="Ex: 29 Truck | 15 Cavalo | 4 3/4" onchange="saveF()"></div>
           <div class="f"><label>Customizações de instalação</label><textarea id="fr-custom" onchange="saveF()"></textarea></div>
         </div>
       </div>
@@ -866,7 +666,6 @@ let userProfile = null;
 let isSignUpMode = false;
 let F = {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
 let G = {startDate:'',endDate:'',tasks:[]};
-window._diarioLocal = [];
 
 /* ─── SALVAR NOVA SENHA ─── */
 async function saveNewPassword() {
@@ -1025,8 +824,6 @@ async function switchProject(id) {
 
   F = data?.form_json || {stk:[],bases:[],risks:[],costs:[],matriz:[],dados:{}};
   G = data?.gantt_json || {startDate:'',endDate:'',tasks:[]};
-  window._diarioLocal = data?.diario_json || [];
-  window._agendaLocal = data?.form_json?._agenda || [];
 
   const isOwner = project?.owner_id === currentUser.id;
   const isGestor = userProfile?.role === 'gestor';
@@ -1059,13 +856,10 @@ async function switchProject(id) {
 async function persist() {
   if(!currentId) return;
   setSaved('saving');
-  // Embute agenda dentro do form_json (evita precisar de coluna nova no banco)
-  const formParaSalvar = { ...F, _agenda: window._agendaLocal || [] };
   const { error } = await supa.from('project_data').upsert({
     project_id: currentId,
-    form_json: formParaSalvar,
+    form_json: F,
     gantt_json: G,
-    diario_json: window._diarioLocal,
     updated_at: new Date()
   });
   if (error) {
@@ -1109,12 +903,11 @@ async function createProject() {
 
     const newProj = data[0];
 
-    // Cria registro de dados do projeto (ignora erro se coluna agenda_json não existir)
+    // Cria registro de dados do projeto
     await supa.from('project_data').insert([{
       project_id: newProj.id,
-      form_json: { stk:[], bases:[], risks:[], costs:[], matriz:[], dados:{}, _agenda:[] },
-      gantt_json: { startDate:'', endDate:'', tasks:[] },
-      diario_json: []
+      form_json: { stk:[], bases:[], risks:[], costs:[], matriz:[], dados:{} },
+      gantt_json: { startDate:'', endDate:'', tasks:[] }
     }]);
 
     await loadProjects();
@@ -1186,12 +979,8 @@ function switchTab(tab,el){
   document.getElementById('tab-dashboard').style.display = tab==='dashboard'?'block':'none';
   document.getElementById('tab-form').style.display = tab==='form'?'block':'none';
   document.getElementById('tab-gantt').style.display = tab==='gantt'?'block':'none';
-  document.getElementById('tab-diario').style.display = tab==='diario'?'block':'none';
-  document.getElementById('tab-agenda').style.display = tab==='agenda'?'block':'none';
   document.getElementById('export-bar').style.display = tab==='dashboard'?'none':'flex';
   if(tab==='dashboard') renderDashboard();
-  if(tab==='diario') renderDiario();
-  if(tab==='agenda') renderAgenda();
 }
 
 /* ─── GESTÃO DE USUÁRIOS COMPLETA ─── */
@@ -1391,28 +1180,23 @@ function syncFormFields() {
   const d=F.dados;
   ['nome','resp','pat','prod','data','prazo','crit','obj','entrega'].forEach(k=>set('f-'+k,d[k]));
   set('f-status', d.projectStatus||'Em Andamento');
-  ['total','cancel','tipo','custom'].forEach(k=>set('fr-'+k,d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]));
+  ['total','tipo','custom'].forEach(k=>set('fr-'+k,d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]));
   set('c-obs',d.cObs);
   ['teste','visitas','nst','nsc','tempo'].forEach(k=>set('m-'+k,d['m'+k.charAt(0).toUpperCase()+k.slice(1)]));
   ['forca','desaf','rec'].forEach(k=>set('l-'+k,d['l'+k.charAt(0).toUpperCase()+k.slice(1)]));
-  calcFinal(); renderStk(); renderMatriz(); renderBases(); renderRisks(); renderCosts();
+  renderStk(); renderMatriz(); renderBases(); renderRisks(); renderCosts();
 }
 
 function saveF(){
   const d={};
   ['nome','resp','pat','prod','data','prazo','crit','obj','entrega'].forEach(k=>d[k]=getVal('f-'+k));
   d.projectStatus = getVal('f-status') || 'Em Andamento';
-  ['total','cancel','tipo','custom'].forEach(k=>d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('fr-'+k));
+  ['total','tipo','custom'].forEach(k=>d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('fr-'+k));
   d.cObs=getVal('c-obs');
   ['teste','visitas','nst','nsc','tempo'].forEach(k=>d['m'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('m-'+k));
   ['forca','desaf','rec'].forEach(k=>d['l'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('l-'+k));
   F.dados=d;
   persist();
-}
-
-function calcFinal(){
-  const t=parseFloat(getVal('fr-total'))||0, c=parseFloat(getVal('fr-cancel'))||0;
-  const el=document.getElementById('fr-final'); if(el)el.value=t-c;
 }
 
 function renderStk(){ 
@@ -1662,140 +1446,6 @@ function attachDrag(){
   document.addEventListener('mouseup',()=>{if(drag){drag=null;}});
 }
 
-/* ─── DIÁRIO DE BORDO ─── */
-const TYPE_CLASS={'Problema':'lt-problema','Visita':'lt-visita','Decisão':'lt-decisao','Contato com cliente':'lt-contato','Entrega':'lt-entrega','Outro':'lt-outro'};
-const STATUS_CLASS={'Aberto':'ls-aberto','Em andamento':'ls-andamento','Resolvido':'ls-resolvido'};
-
-function saveDiario(logs){ window._diarioLocal = logs; persist(); }
-
-function toggleLogForm(){
-  const form=document.getElementById('log-form');
-  const showing=form.style.display!=='none';
-  form.style.display=showing?'none':'block';
-  if(!showing){
-    document.getElementById('log-data').value=new Date().toISOString().slice(0,10);
-    document.getElementById('log-desc').focus();
-  }
-}
-
-function saveLog(){
-  const data=document.getElementById('log-data').value;
-  const tipo=document.getElementById('log-tipo').value;
-  const resp=document.getElementById('log-resp').value.trim();
-  const status=document.getElementById('log-status').value;
-  const desc=document.getElementById('log-desc').value.trim();
-  if(!desc){ alert('Preencha a descrição do ocorrido.'); return; }
-  const logs=window._diarioLocal || [];
-  logs.unshift({id:uid(),data,tipo,resp,status,desc,criadoEm:new Date().toISOString()});
-  saveDiario(logs);
-  document.getElementById('log-desc').value='';
-  document.getElementById('log-status').value='Aberto';
-  toggleLogForm();
-  renderDiario();
-}
-
-function editLog(id){
-  const logs=window._diarioLocal || [];
-  const log=logs.find(l=>l.id===id);
-  if(!log) return;
-  document.getElementById('log-data').value=log.data||'';
-  document.getElementById('log-tipo').value=log.tipo||'Outro';
-  document.getElementById('log-resp').value=log.resp||'';
-  document.getElementById('log-status').value=log.status||'Aberto';
-  document.getElementById('log-desc').value=log.desc||'';
-  document.getElementById('log-form').style.display='block';
-  window._editingLogId=id;
-  document.querySelector('#log-form .log-form-actions .log-btn:last-child').onclick=()=>updateLog(id);
-}
-
-function updateLog(id){
-  const logs=window._diarioLocal || [];
-  const idx=logs.findIndex(l=>l.id===id);
-  if(idx<0) return;
-  logs[idx]={
-    ...logs[idx],
-    data:document.getElementById('log-data').value,
-    tipo:document.getElementById('log-tipo').value,
-    resp:document.getElementById('log-resp').value.trim(),
-    status:document.getElementById('log-status').value,
-    desc:document.getElementById('log-desc').value.trim(),
-    editadoEm:new Date().toISOString()
-  };
-  saveDiario(logs);
-  document.getElementById('log-desc').value='';
-  document.getElementById('log-form').style.display='none';
-  document.querySelector('#log-form .log-form-actions .log-btn:last-child').onclick=saveLog;
-  renderDiario();
-}
-
-function deleteLog(id){
-  if(!confirm('Excluir este registro?')) return;
-  const logs=(window._diarioLocal || []).filter(l=>l.id!==id);
-  saveDiario(logs);
-  renderDiario();
-}
-
-function changeLogStatus(id, newStatus){
-  const logs=window._diarioLocal || [];
-  const log=logs.find(l=>l.id===id);
-  if(log){ log.status=newStatus; saveDiario(logs); renderDiario(); }
-}
-
-function renderDiario(){
-  let logs=window._diarioLocal || [];
-  const filterTipo=document.getElementById('filter-tipo')?.value||'';
-  const filterStatus=document.getElementById('filter-diario-status')?.value||'';
-  const search=(document.getElementById('filter-search')?.value||'').toLowerCase();
-
-  const total=logs.length;
-  const abertos=logs.filter(l=>l.status==='Aberto').length;
-  const andamento=logs.filter(l=>l.status==='Em andamento').length;
-  const resolvidos=logs.filter(l=>l.status==='Resolvido').length;
-  const statsEl=document.getElementById('log-stats');
-  if(statsEl) statsEl.innerHTML=`
-    <div class="log-stat"><span class="log-stat-num">${total}</span><span class="log-stat-label">registros</span></div>
-    <div class="log-stat"><span class="log-stat-num" style="color:var(--red-dark)">${abertos}</span><span class="log-stat-label">abertos</span></div>
-    <div class="log-stat"><span class="log-stat-num" style="color:#854F0B">${andamento}</span><span class="log-stat-label">em andamento</span></div>
-    <div class="log-stat"><span class="log-stat-num" style="color:var(--green-dark)">${resolvidos}</span><span class="log-stat-label">resolvidos</span></div>`;
-
-  if(filterTipo) logs=logs.filter(l=>l.tipo===filterTipo);
-  if(filterStatus) logs=logs.filter(l=>l.status===filterStatus);
-  if(search) logs=logs.filter(l=>(l.desc+l.resp+l.tipo+l.data).toLowerCase().includes(search));
-
-  const listEl=document.getElementById('log-list');
-  if(!listEl) return;
-
-  if(!logs.length){
-    listEl.innerHTML=`<div class="diario-empty"><p>${total===0?'Nenhum registro ainda.':'Nenhum registro encontrado com esses filtros.'}</p>${total===0?'<button class="btn-ghost" onclick="toggleLogForm()">+ adicionar primeiro registro</button>':''}</div>`;
-    return;
-  }
-
-  const fmtDate=s=>{ if(!s)return '—'; const[y,m,d]=s.split('-'); return `${d}/${m}/${y}`; };
-
-  listEl.innerHTML=logs.map(log=>{
-    const tc=TYPE_CLASS[log.tipo]||'lt-outro';
-    const sc=STATUS_CLASS[log.status]||'ls-aberto';
-    const statusOpts=['Aberto','Em andamento','Resolvido'].map(s=>`<option value="${s}" ${log.status===s?'selected':''}>${s}</option>`).join('');
-    return `<div class="log-card">
-      <div class="log-card-head">
-        <span class="log-date">${fmtDate(log.data)}</span>
-        <span class="log-type-pill ${tc}">${log.tipo}</span>
-        ${log.resp?`<span class="log-resp">· ${e(log.resp)}</span>`:''}
-        <select class="log-status-pill ${sc}" onchange="changeLogStatus('${log.id}',this.value)" style="border:none;cursor:pointer;font-family:'Geist',sans-serif;font-weight:600;font-size:10px">
-          ${statusOpts}
-        </select>
-      </div>
-      <div class="log-card-body">
-        <div class="log-desc">${e(log.desc)}</div>
-        <div class="log-actions">
-          <button class="log-btn" onclick="editLog('${log.id}')">✎ editar</button>
-          <button class="log-btn danger" onclick="deleteLog('${log.id}')">× excluir</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
 /* ─── DASHBOARD ─── */
 function projStatus(f,g){
   const tasks=g.tasks.filter(t=>t.type==='task');
@@ -1945,7 +1595,7 @@ async function renderDashboard(){
     const tasks=g.tasks.filter(t=>t.type==='task');
     const done=tasks.filter(t=>t.status==='realizado').length;
     const late=tasks.filter(t=>t.status==='atrasado').length;
-    const frota=(parseFloat(f.dados.frTotal)||0)-(parseFloat(f.dados.frCancel)||0);
+    const frota=parseFloat(f.dados.frTotal)||0;
     const nst=f.dados.mNst?parseFloat(f.dados.mNst):null;
     const nsc=f.dados.mNsc?parseFloat(f.dados.mNsc):null;
     const barColor=status==='late'?'var(--red)':status==='risk'?'#EF9F27':status==='ok'?'var(--green)':'var(--blue)';
@@ -2014,7 +1664,7 @@ function exportXLSX(){
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sr),'Stakeholders');
   const mr=[['Informação/Assunto','Para quem','Quando','Como','Responsável']];F.matriz.forEach(m=>mr.push([m.assunto,m.para,m.quando,m.como,m.resp]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(mr),'Matriz de Comunicação');
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Item','Valor'],['Total contratado',d.frTotal],['Cancelados',d.frCancel],['Finalizando',(parseFloat(d.frTotal)||0)-(parseFloat(d.frCancel)||0)],['Tipo/Modelo',d.frTipo],['Customizações',d.frCustom]]),'Frota');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Item','Valor'],['Total contratado',d.frTotal],['Tipo/Modelo',d.frTipo],['Customizações',d.frCustom]]),'Frota');
   const br2=[['ID','Endereço','Responsável','Contato','Veículos','Produto']];F.bases.forEach(b=>br2.push([b.id,b.end,b.resp,b.tel,b.veic,b.prod]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(br2),'Bases');
   const rr=[['Tipo','Descrição','Impacto','Mitigação']];F.risks.forEach(r=>rr.push([r.tipo,r.desc,r.imp,r.mit]));
@@ -2102,7 +1752,7 @@ function exportPDF(mode='interno'){
   <h3 style="font-size:12px;font-weight:600;color:#07074E;margin:12px 0 6px">2.1 Matriz de comunicação</h3>
   <table><thead><tr><th>Informação / Assunto</th><th>Para quem</th><th>Quando</th><th>Como</th><th>Responsável</th></tr></thead><tbody>${F.matriz.map(m=>`<tr><td>${m.assunto||''}</td><td>${m.para||''}</td><td>${m.quando||''}</td><td>${m.como||''}</td><td>${m.resp||''}</td></tr>`).join('')}</tbody></table>
   ${sec('Levantamento da frota')}
-  <div class="kv"><div class="k">Total contratado</div><div class="v">${d.frTotal||''}</div><div class="k">Cancelados</div><div class="v">${d.frCancel||''}</div><div class="k">Finalizando</div><div class="v">${(parseFloat(d.frTotal)||0)-(parseFloat(d.frCancel)||0)}</div><div class="k">Tipo/Modelo</div><div class="v">${d.frTipo||''}</div><div class="k">Customizações</div><div class="v"><pre>${d.frCustom||''}</pre></div></div>
+  <div class="kv"><div class="k">Total contratado</div><div class="v">${d.frTotal||''}</div><div class="k">Tipo/Modelo</div><div class="v">${d.frTipo||''}</div><div class="k">Customizações</div><div class="v"><pre>${d.frCustom||''}</pre></div></div>
   ${sec('Bases de operação e instalação')}
   <table><thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Veículos</th></tr></thead><tbody>${bH}</tbody></table>
   ${sec('Gestão de riscos e premissas')}
@@ -2118,13 +1768,6 @@ function exportPDF(mode='interno'){
   body+=`${sec('Métricas de resultado')}<div class="kv"><div class="k">Teste Cobli instalador</div><div class="v">${d.mTeste||''}%</div><div class="k">Qtd. de visitas</div><div class="v">${d.mVisitas||''}</div><div class="k">No-show técnico</div><div class="v">${d.mNst||''}%</div><div class="k">No-show cliente</div><div class="v">${d.mNsc||''}%</div><div class="k">Tempo médio instalação</div><div class="v">${d.mTempo||''}</div></div>`;
 
   if(!isCliente){
-    const logs=window._diarioLocal || [];
-    const fmtD2=s=>{if(!s)return '—';const[y,m,d]=s.split('-');return `${d}/${m}/${y}`;};
-    const logRows=logs.map(l=>{
-      const sc=l.status==='Resolvido'?'#008a79':l.status==='Em andamento'?'#854F0B':'#cc3828';
-      return `<tr><td>${fmtD2(l.data)}</td><td>${l.tipo}</td><td>${l.resp||'—'}</td><td style="color:${sc};font-weight:500">${l.status}</td><td style="white-space:pre-wrap">${l.desc}</td></tr>`;
-    }).join('');
-    body+=`${sec('Diário de bordo')}<p style="font-size:11px;color:#9399bb;margin-bottom:8px">${logs.length} registro(s) · uso interno</p>${logs.length?`<table><thead><tr><th style="width:70px">Data</th><th style="width:110px">Tipo</th><th style="width:110px">Responsável</th><th style="width:90px">Status</th><th>Descrição</th></tr></thead><tbody>${logRows}</tbody></table>`:'<p style="font-size:12px;color:#9399bb">Nenhum registro no diário de bordo.</p>'}`;
     body+=`${sec('Lições aprendidas')}<p style="font-weight:bold;font-size:11px;margin-bottom:4px">Forças</p><pre style="margin-bottom:10px">${d.lForca||''}</pre><p style="font-weight:bold;font-size:11px;margin-bottom:4px">Desafios</p><pre style="margin-bottom:10px">${d.lDesaf||''}</pre><p style="font-weight:bold;font-size:11px;margin-bottom:4px">Recomendações</p><pre>${d.lRec||''}</pre>`;
   }
 
@@ -2201,203 +1844,6 @@ async function saveChangedPassword() {
 
 document.getElementById('modal-input').addEventListener('keydown',ev=>{if(ev.key==='Enter')createProject();if(ev.key==='Escape')closeModal();});
 document.getElementById('modal-bg').addEventListener('click',ev=>{if(ev.target===document.getElementById('modal-bg'))closeModal();});
-
-
-/* ─── AGENDAMENTOS ─── */
-const AG_STATUS_CLASS = {
-  'Agendado':'as-agendado','Confirmado':'as-confirmado',
-  'Realizado':'as-realizado','No-show':'as-noshow','Cancelado':'as-cancelado'
-};
-const AG_CARD_CLASS = {
-  'Agendado':'status-agendado','Confirmado':'status-confirmado',
-  'Realizado':'status-realizado','No-show':'status-noshow','Cancelado':'status-cancelado'
-};
-
-function saveAgendaData(){ window._agendaLocal = window._agendaLocal || []; persist(); }
-
-function toggleAgendaForm(){
-  const form = document.getElementById('agenda-form');
-  const open = form.style.display !== 'none';
-  form.style.display = open ? 'none' : 'block';
-  if(!open){
-    document.getElementById('ag-data').value = new Date().toISOString().slice(0,10);
-    document.getElementById('ag-hora').value = '';
-    document.getElementById('ag-base').value = '';
-    document.getElementById('ag-status').value = 'Agendado';
-    document.getElementById('ag-tecnico').value = '';
-    document.getElementById('ag-contato').value = '';
-    document.getElementById('ag-tel').value = '';
-    document.getElementById('ag-veic').value = '';
-    document.getElementById('ag-obs').value = '';
-    document.getElementById('ag-save-btn').onclick = saveAgendamento;
-    document.getElementById('ag-save-btn').textContent = 'Salvar agendamento';
-    document.getElementById('ag-base').focus();
-  }
-}
-
-function saveAgendamento(){
-  const data    = document.getElementById('ag-data').value;
-  const hora    = document.getElementById('ag-hora').value;
-  const base    = document.getElementById('ag-base').value.trim();
-  const status  = document.getElementById('ag-status').value;
-  const tecnico = document.getElementById('ag-tecnico').value.trim();
-  const contato = document.getElementById('ag-contato').value.trim();
-  const tel     = document.getElementById('ag-tel').value.trim();
-  const veic    = document.getElementById('ag-veic').value;
-  const obs     = document.getElementById('ag-obs').value.trim();
-  if(!data || !base){ alert('Preencha ao menos a data e a base/local.'); return; }
-  const list = window._agendaLocal || [];
-  list.push({ id: uid(), data, hora, base, status, tecnico, contato, tel, veic: parseInt(veic)||0, obs, criadoEm: new Date().toISOString() });
-  list.sort((a,b) => a.data.localeCompare(b.data) || (a.hora||'').localeCompare(b.hora||''));
-  window._agendaLocal = list;
-  saveAgendaData();
-  toggleAgendaForm();
-  renderAgenda();
-}
-
-function editAgendamento(id){
-  const ag = (window._agendaLocal||[]).find(a=>a.id===id);
-  if(!ag) return;
-  document.getElementById('ag-data').value    = ag.data||'';
-  document.getElementById('ag-hora').value    = ag.hora||'';
-  document.getElementById('ag-base').value    = ag.base||'';
-  document.getElementById('ag-status').value  = ag.status||'Agendado';
-  document.getElementById('ag-tecnico').value = ag.tecnico||'';
-  document.getElementById('ag-contato').value = ag.contato||'';
-  document.getElementById('ag-tel').value     = ag.tel||'';
-  document.getElementById('ag-veic').value    = ag.veic||'';
-  document.getElementById('ag-obs').value     = ag.obs||'';
-  document.getElementById('agenda-form').style.display = 'block';
-  const saveBtn = document.getElementById('ag-save-btn');
-  saveBtn.textContent = 'Atualizar agendamento';
-  saveBtn.onclick = () => updateAgendamento(id);
-}
-
-function updateAgendamento(id){
-  const list = window._agendaLocal||[];
-  const idx = list.findIndex(a=>a.id===id);
-  if(idx<0) return;
-  list[idx] = { ...list[idx],
-    data:    document.getElementById('ag-data').value,
-    hora:    document.getElementById('ag-hora').value,
-    base:    document.getElementById('ag-base').value.trim(),
-    status:  document.getElementById('ag-status').value,
-    tecnico: document.getElementById('ag-tecnico').value.trim(),
-    contato: document.getElementById('ag-contato').value.trim(),
-    tel:     document.getElementById('ag-tel').value.trim(),
-    veic:    parseInt(document.getElementById('ag-veic').value)||0,
-    obs:     document.getElementById('ag-obs').value.trim(),
-    editadoEm: new Date().toISOString()
-  };
-  list.sort((a,b) => a.data.localeCompare(b.data) || (a.hora||'').localeCompare(b.hora||''));
-  window._agendaLocal = list;
-  saveAgendaData();
-  document.getElementById('agenda-form').style.display = 'none';
-  renderAgenda();
-}
-
-function changeAgStatus(id, newStatus){
-  const ag = (window._agendaLocal||[]).find(a=>a.id===id);
-  if(ag){ ag.status = newStatus; saveAgendaData(); renderAgenda(); }
-}
-
-function deleteAgendamento(id){
-  if(!confirm('Excluir este agendamento?')) return;
-  window._agendaLocal = (window._agendaLocal||[]).filter(a=>a.id!==id);
-  saveAgendaData(); renderAgenda();
-}
-
-function renderAgenda(){
-  let list = window._agendaLocal || [];
-  const filterStatus  = document.getElementById('ag-filter-status')?.value || '';
-  const filterPeriodo = document.getElementById('ag-filter-periodo')?.value || 'proximos';
-  const hoje = new Date().toISOString().slice(0,10);
-
-  // Stats
-  const total       = list.length;
-  const agendados   = list.filter(a=>a.status==='Agendado').length;
-  const confirmados = list.filter(a=>a.status==='Confirmado').length;
-  const realizados  = list.filter(a=>a.status==='Realizado').length;
-  const noshow      = list.filter(a=>a.status==='No-show').length;
-  const proximos7   = list.filter(a=>a.data>=hoje && a.data<=new Date(Date.now()+7*864e5).toISOString().slice(0,10)).length;
-
-  const statsEl = document.getElementById('agenda-stats');
-  if(statsEl) statsEl.innerHTML = `
-    <div class="agenda-stat"><span class="agenda-stat-num">${total}</span><span class="agenda-stat-label">total</span></div>
-    <div class="agenda-stat"><span class="agenda-stat-num" style="color:var(--cobli-royal)">${agendados+confirmados}</span><span class="agenda-stat-label">pendentes</span></div>
-    <div class="agenda-stat"><span class="agenda-stat-num" style="color:#854F0B">${proximos7}</span><span class="agenda-stat-label">próx. 7 dias</span></div>
-    <div class="agenda-stat"><span class="agenda-stat-num" style="color:var(--green-dark)">${realizados}</span><span class="agenda-stat-label">realizados</span></div>
-    ${noshow?`<div class="agenda-stat"><span class="agenda-stat-num" style="color:var(--red-dark)">${noshow}</span><span class="agenda-stat-label">no-show</span></div>`:''}
-  `;
-
-  // Badge na aba
-  const badge = document.getElementById('agenda-badge');
-  if(badge) badge.textContent = agendados + confirmados;
-
-  // Filtros
-  if(filterStatus) list = list.filter(a=>a.status===filterStatus);
-  if(filterPeriodo==='proximos') list = list.filter(a=>a.data>=hoje);
-  else if(filterPeriodo==='passados') list = list.filter(a=>a.data<hoje);
-
-  const listEl = document.getElementById('agenda-list');
-  if(!listEl) return;
-
-  if(!list.length){
-    const msg = total===0 ? 'Nenhum agendamento registrado.' : 'Nenhum agendamento com esses filtros.';
-    listEl.innerHTML = `<div class="agenda-empty"><p>${msg}</p>${total===0?'<button class="btn-ghost" onclick="toggleAgendaForm()">+ criar primeiro agendamento</button>':''}</div>`;
-    return;
-  }
-
-  const fmtDate = s => { if(!s)return '—'; const[y,m,d]=s.split('-'); return `${d}/${m}/${y}`; };
-  const fmtHora = s => s || '—';
-  const isPast  = s => s < hoje;
-
-  // Agrupa por mês
-  const grupos = {};
-  list.forEach(ag => {
-    const key = ag.data ? ag.data.slice(0,7) : 'sem-data';
-    if(!grupos[key]) grupos[key] = [];
-    grupos[key].push(ag);
-  });
-
-  let out = '';
-  Object.keys(grupos).sort().forEach(key => {
-    const [y,m] = key.split('-');
-    const meses = ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-    const titulo = m ? `${meses[+m]} ${y}` : 'Sem data';
-    out += `<div class="agenda-section-title">${titulo} · ${grupos[key].length} agendamento${grupos[key].length!==1?'s':''}</div>`;
-    grupos[key].forEach(ag => {
-      const sc = AG_STATUS_CLASS[ag.status]||'as-agendado';
-      const cc = AG_CARD_CLASS[ag.status]||'status-agendado';
-      const past = isPast(ag.data) && ag.status==='Agendado';
-      const statusOpts = ['Agendado','Confirmado','Realizado','No-show','Cancelado']
-        .map(s=>`<option value="${s}" ${ag.status===s?'selected':''}>${s}</option>`).join('');
-      out += `<div class="agenda-card ${cc}">
-        <div class="agenda-card-head">
-          <div class="agenda-date-badge ${past?'past':''}">${fmtDate(ag.data)}${ag.hora?' · '+fmtHora(ag.hora):''}</div>
-          <div class="agenda-base">${e(ag.base)||'Base não informada'}</div>
-          ${ag.veic?`<span style="font-size:11px;color:var(--text3);white-space:nowrap">${ag.veic} veículo${ag.veic!==1?'s':''}</span>`:''}
-          <select class="agenda-status-pill ${sc}" onchange="changeAgStatus('${ag.id}',this.value)" style="border:none;cursor:pointer;font-family:'Geist',sans-serif;font-weight:600;font-size:10px">
-            ${statusOpts}
-          </select>
-        </div>
-        <div class="agenda-card-body">
-          <div class="agenda-field"><label>Técnico</label><span>${e(ag.tecnico)||'—'}</span></div>
-          <div class="agenda-field"><label>Contato cliente</label><span>${e(ag.contato)||'—'}</span></div>
-          <div class="agenda-field"><label>Telefone</label><span>${e(ag.tel)||'—'}</span></div>
-          <div class="agenda-field"><label>Veículos</label><span>${ag.veic||'—'}</span></div>
-        </div>
-        ${ag.obs?`<div class="agenda-obs">"${e(ag.obs)}"</div>`:''}
-        <div class="agenda-actions">
-          <button class="log-btn" onclick="editAgendamento('${ag.id}')">✎ editar</button>
-          <button class="log-btn danger" onclick="deleteAgendamento('${ag.id}')">× excluir</button>
-        </div>
-      </div>`;
-    });
-  });
-
-  listEl.innerHTML = out;
-}
 
 
 function showWelcomeScreen() {
