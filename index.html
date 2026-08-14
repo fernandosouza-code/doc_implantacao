@@ -254,8 +254,6 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 .tl-name{width:160px;flex-shrink:0;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tl-bar-wrap{flex:1;height:20px;position:relative;background:var(--gray100);border-radius:3px;overflow:hidden}
 .tl-bar{position:absolute;top:2px;bottom:2px;border-radius:3px}
-.tl-bar.ok{background:var(--green)}
-.tl-bar.risk{background:#EF9F27}
 .tl-bar.late{background:var(--red)}
 .tl-bar.new{background:var(--blue)}
 .tl-today{position:absolute;top:0;bottom:0;width:2px;background:var(--red);z-index:2}
@@ -364,15 +362,6 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
         <option value="">Todos</option>
       </select>
     </div>
-    <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
-      <span style="font-size:11px;color:rgba(255,255,255,0.55);white-space:nowrap;font-weight:500">Status:</span>
-      <select id="filter-status" onchange="onFilterStatus()" style="font-family:'Geist',sans-serif;font-size:12px;font-weight:600;padding:5px 10px;background:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:var(--cobli-indigo);cursor:pointer;min-width:160px">
-        <option value="">Todos</option>
-        <option value="Em Andamento">🔵 Em Andamento</option>
-        <option value="Aguardando Aprovação">🟡 Aguardando Aprovação</option>
-        <option value="Projeto Finalizado">🟢 Projeto Finalizado</option>
-      </select>
-    </div>
     <button class="btn-new-proj" onclick="openNewModal()">+ novo cliente</button>
   </div>
 
@@ -403,16 +392,9 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       </div>
       <div class="card-body open">
         <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Dados chave do projeto</strong>Cartão de identidade do projeto — preencha assim que o contrato for fechado.<ul><li><b>Nome do projeto:</b> identificação interna</li><li><b>Responsável:</b> quem da Cobli lidera</li><li><b>Patrocinador:</b> decisor do lado do cliente</li><li><b>Produto:</b> solução contratada</li><li><b>Data e prazo:</b> base para cronograma e SLA</li><li><b>Objetivo SMART:</b> meta mensurável</li><li><b>Entregáveis:</b> o que será entregue ao final</li></ul></div></div>
-        <div class="fg c3">
+        <div class="fg c2">
           <div class="f"><label>Nome do projeto</label><input id="f-nome" placeholder="Ex: Implementação Cobli — Cliente XPTO" onchange="saveF()"></div>
           <div class="f"><label>Responsável (Cobli)</label><input id="f-resp" onchange="saveF()"></div>
-          <div class="f"><label>Status do projeto</label>
-            <select id="f-status" onchange="saveF()">
-              <option value="Em Andamento">🔵 Em Andamento</option>
-              <option value="Aguardando Aprovação">🟡 Aguardando Aprovação</option>
-              <option value="Projeto Finalizado">🟢 Projeto Finalizado</option>
-            </select>
-          </div>
         </div>
         <div class="fg c2">
           <div class="f"><label>Patrocinador / cliente</label><input id="f-pat" onchange="saveF()"></div>
@@ -502,9 +484,9 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
         <div class="card-num">4</div><div class="card-title">Bases de operação e instalação</div><div class="card-chev">▾</div>
       </div>
       <div class="card-body">
-        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Bases de operação</strong>Registra onde as instalações acontecerão — essencial para logística de envio.<ul><li><b>ID da base:</b> nome de referência (ex: Matriz, Base SP)</li><li><b>Endereço:</b> necessário para envio de equipamentos e deslocamento</li><li><b>Responsável local:</b> pessoa do cliente que acompanha o checklist — obrigatório</li><li><b>Qtd. de veículos:</b> define alocação de técnicos e tempo em cada base</li></ul></div></div>
+        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Bases de operação</strong>Registra onde as instalações acontecerão — essencial para logística de envio.<ul><li><b>ID da base:</b> nome de referência (ex: Matriz, Base SP)</li><li><b>Endereço:</b> necessário para envio de equipamentos e deslocamento</li><li><b>Responsável local:</b> pessoa do cliente que acompanha o checklist — obrigatório</li><li><b>Qtd. de veículos:</b> define alocação de técnicos e tempo em cada base</li><li><b>Documentação p/ acesso:</b> o que a base exige para liberar entrada — ex: ASO, ficha de EPI, treinamento de segurança, cadastro prévio de visitante</li></ul></div></div>
         <div class="tbl-wrap"><table class="itbl">
-          <thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Veículos</th><th></th></tr></thead>
+          <thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Veículos</th><th>Documentação p/ acesso</th><th></th></tr></thead>
           <tbody id="base-body"></tbody>
         </table></div>
         <button class="add-row" onclick="addBase()">+ adicionar base</button>
@@ -516,10 +498,11 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
         <div class="card-num">5</div><div class="card-title">Logística de envios</div><div class="card-chev">▾</div>
       </div>
       <div class="card-body">
-        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Logística de envios</strong>Área do time de envios — o que precisa sair da Cobli para cada base do cliente, do produto principal a qualquer item extra.<ul><li><b>Base:</b> selecione entre as bases já cadastradas acima</li><li><b>Produto:</b> qual produto vai para aquela base</li><li><b>Quantidade:</b> quantas unidades enviar</li><li><b>Item/equipamento extra:</b> suportes, conduítes, cabos ou qualquer material fora do padrão</li></ul></div></div>
+        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Logística de envios</strong>Área do time de envios — o que precisa sair da Cobli para cada base do cliente, do produto principal a qualquer item extra.<ul><li><b>Base:</b> selecione entre as bases já cadastradas acima</li><li><b>Produto:</b> qual produto vai para aquela base</li><li><b>Operadora do chip:</b> melhor operadora de sinal para os dispositivos daquela base</li><li><b>Quantidade:</b> quantas unidades enviar</li><li><b>Item/equipamento extra:</b> suportes, conduítes, cabos ou qualquer material fora do padrão</li></ul></div></div>
         <datalist id="envio-bases-datalist"></datalist>
+        <datalist id="envio-operadoras-datalist"><option value="Vivo"><option value="Claro"><option value="TIM"><option value="Oi"></datalist>
         <div class="tbl-wrap"><table class="itbl">
-          <thead><tr><th>Base</th><th>Produto</th><th style="width:90px">Quantidade</th><th>Item / equipamento extra</th><th>Observações</th><th></th></tr></thead>
+          <thead><tr><th>Base</th><th>Produto</th><th>Operadora do chip</th><th style="width:90px">Quantidade</th><th>Item / equipamento extra</th><th>Observações</th><th></th></tr></thead>
           <tbody id="envio-body"></tbody>
         </table></div>
         <button class="add-row" onclick="addEnvio()">+ adicionar envio</button>
@@ -802,15 +785,6 @@ async function loadProjects() {
     if (profiles) profiles.forEach(p => { window._ownerEmails[p.id] = p.email; });
   }
 
-  // Cache de status dos projetos para o filtro
-  if (!window._projectStatuses) window._projectStatuses = {};
-  if (projects.length > 0) {
-    const { data: allPd } = await supa.from('project_data').select('project_id, form_json');
-    if (allPd) allPd.forEach(pd => {
-      window._projectStatuses[pd.project_id] = pd.form_json?.dados?.projectStatus || 'Em Andamento';
-    });
-  }
-
   renderProjBar();
 }
 
@@ -866,7 +840,6 @@ async function persist() {
     setSaved('saved'); // não trava o usuário
   } else {
     setSaved('saved');
-    if(currentId && F.dados?.projectStatus) window._projectStatuses[currentId] = F.dados.projectStatus;
   }
 }
 
@@ -1087,11 +1060,7 @@ function renderProjBar(){
   const clienteSelect = document.getElementById('filter-cliente');
   if (!clienteSelect) return;
   const respFilter   = document.getElementById('filter-responsavel')?.value || '';
-  const statusFilter = document.getElementById('filter-status')?.value || '';
   let visibleProjects = respFilter ? projects.filter(p => p.owner_id === respFilter) : projects;
-  if (statusFilter) visibleProjects = visibleProjects.filter(p =>
-    (window._projectStatuses?.[p.id] || 'Em Andamento') === statusFilter
-  );
   const prevCliente = clienteSelect.value;
   clienteSelect.innerHTML = '<option value="">— Todos os clientes —</option>' +
     visibleProjects.map(p => `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${e(p.name)}</option>`).join('');
@@ -1115,22 +1084,6 @@ function onFilterCliente() {
   const selected = document.getElementById('filter-cliente').value;
   if (!selected) return;
   if (selected !== currentId) switchProject(selected);
-}
-
-function onFilterStatus() {
-  const statusFilter = document.getElementById('filter-status').value;
-  const respFilter   = document.getElementById('filter-responsavel').value;
-  let visibleProjects = respFilter ? projects.filter(p => p.owner_id === respFilter) : projects;
-  if (statusFilter) visibleProjects = visibleProjects.filter(p =>
-    (window._projectStatuses?.[p.id] || 'Em Andamento') === statusFilter
-  );
-  const clienteSelect = document.getElementById('filter-cliente');
-  clienteSelect.innerHTML = '<option value="">— Todos os clientes —</option>' +
-    visibleProjects.map(p => `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${e(p.name)}</option>`).join('');
-  if (visibleProjects.length > 0 && !visibleProjects.find(p => p.id === currentId)) {
-    switchProject(visibleProjects[0].id);
-    clienteSelect.value = visibleProjects[0].id;
-  } else { clienteSelect.value = currentId || ''; }
 }
 
 function onFilterResponsavel() {
@@ -1178,7 +1131,6 @@ function syncFormFields() {
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
   const d=F.dados;
   ['nome','resp','pat','prod','data','prazo','crit','obj','entrega'].forEach(k=>set('f-'+k,d[k]));
-  set('f-status', d.projectStatus||'Em Andamento');
   ['total','tipo','atende','obscompat','custom'].forEach(k=>set('fr-'+k,d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]));
   set('c-obs',d.cObs);
   renderStk(); renderMatriz(); renderBases(); renderEnvios(); renderRisks(); renderCosts(); renderFrPlanilha();
@@ -1241,7 +1193,6 @@ function renderFrPlanilha(){
 function saveF(){
   const d={...(F.dados||{})};
   ['nome','resp','pat','prod','data','prazo','crit','obj','entrega'].forEach(k=>d[k]=getVal('f-'+k));
-  d.projectStatus = getVal('f-status') || 'Em Andamento';
   ['total','tipo','atende','obscompat','custom'].forEach(k=>d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('fr-'+k));
   d.cObs=getVal('c-obs');
   F.dados=d;
@@ -1279,6 +1230,7 @@ function renderBases(){
         <td><input value="${e(b.resp)}" onchange="F.bases[${i}].resp=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input value="${e(b.tel)}" onchange="F.bases[${i}].tel=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input type="number" value="${b.veic}" onchange="F.bases[${i}].veic=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(b.doc)}" placeholder="Ex: ASO, ficha de EPI, treinamento" onchange="F.bases[${i}].doc=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td>${window.canEditCurrent ? `<button class="del-btn" onclick="F.bases.splice(${i},1);saveF();renderBases();renderEnvios()">×</button>` : ''}</td>
     </tr>`).join('');
     document.getElementById('base-body').innerHTML = html;
@@ -1291,6 +1243,7 @@ function renderEnvios(){
     const html = (F.envios||[]).map((v,i)=>`<tr>
         <td><input list="envio-bases-datalist" value="${e(v.base)}" onchange="F.envios[${i}].base=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input value="${e(v.produto)}" onchange="F.envios[${i}].produto=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input list="envio-operadoras-datalist" value="${e(v.operadora)}" onchange="F.envios[${i}].operadora=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input type="number" value="${v.qtd}" onchange="F.envios[${i}].qtd=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input value="${e(v.extra)}" onchange="F.envios[${i}].extra=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input value="${e(v.obs)}" onchange="F.envios[${i}].obs=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
@@ -1328,8 +1281,8 @@ function renderCosts(){
 }
 function addStk() { F.stk.push({papel:'',nome:'',empresa:'',tel:'',email:''}); saveF(); renderStk(); }
 function addMatriz() { F.matriz.push({assunto:'',para:'',quando:'',como:'',resp:''}); saveF(); renderMatriz(); }
-function addBase() { F.bases.push({id:'',end:'',resp:'',tel:'',veic:0}); saveF(); renderBases(); }
-function addEnvio() { F.envios.push({base:'',produto:'',qtd:'',extra:'',obs:''}); saveF(); renderEnvios(); }
+function addBase() { F.bases.push({id:'',end:'',resp:'',tel:'',veic:0,doc:''}); saveF(); renderBases(); }
+function addEnvio() { F.envios.push({base:'',produto:'',operadora:'',qtd:'',extra:'',obs:''}); saveF(); renderEnvios(); }
 function addRisk() { F.risks.push({tipo:'Risco',desc:'',imp:'',mit:''}); saveF(); renderRisks(); }
 function addCost(){F.costs.push({desc:'',cat:'Prestador',status:'Pendente',val:0,data:''});saveF();renderCosts();}
 function calcCosts(){
@@ -1513,13 +1466,10 @@ function attachDrag(){
 }
 
 /* ─── DASHBOARD ─── */
-/* Status do mapeamento: baseado no campo manual "Status do projeto" + prazo — não depende
-   mais de execução de tarefas (Field Engineering não atua mais na operação). */
+/* Status do mapeamento: baseado apenas no prazo — não depende de execução de
+   tarefas nem de um status manual (Field Engineering não atua mais na operação). */
 function mappingStatus(f){
   if(!f.dados?.nome) return 'new';
-  const st=f.dados.projectStatus||'Em Andamento';
-  if(st==='Projeto Finalizado') return 'done';
-  if(st==='Aguardando Aprovação') return 'aguardando';
   const start=f.dados.data?new Date(f.dados.data+'T00:00:00'):null;
   const prazo=parseInt(f.dados.prazo)||30;
   if(start){
@@ -1529,8 +1479,8 @@ function mappingStatus(f){
   return 'andamento';
 }
 
-function statusLabel(s){ return {done:'Projeto Finalizado',aguardando:'Aguardando Aprovação',late:'Atrasado',andamento:'Em Andamento',new:'Novo'}[s]||s; }
-function statusClass(s){ return {done:'sp-ok',aguardando:'sp-risk',late:'sp-late',andamento:'sp-new',new:'sp-new'}[s]||'sp-new'; }
+function statusLabel(s){ return {late:'Atrasado',andamento:'Em Andamento',new:'Novo'}[s]||s; }
+function statusClass(s){ return {late:'sp-late',andamento:'sp-new',new:'sp-new'}[s]||'sp-new'; }
 
 function updateDashFilter(){
   const sel=document.getElementById('dash-filter');
@@ -1562,7 +1512,6 @@ async function renderDashboard(){
 
   const totalProj=allData.length;
   const lateCount=allData.filter(({f})=>mappingStatus(f)==='late').length;
-  const aguardandoCount=allData.filter(({f})=>mappingStatus(f)==='aguardando').length;
   const totalCustos=allData.reduce((s,{f})=>s+f.costs.filter(c=>c.cat!=='Adesão').reduce((a,c)=>a+(parseFloat(c.val)||0),0),0);
   const totalAdesao=allData.reduce((s,{f})=>s+f.costs.filter(c=>c.cat==='Adesão').reduce((a,c)=>a+(parseFloat(c.val)||0),0),0);
   const saldo=totalAdesao-totalCustos;
@@ -1574,7 +1523,7 @@ async function renderDashboard(){
     <div class="kpi-card accent-blue">
       <div class="kpi-label">Projetos ativos</div>
       <div class="kpi-value">${totalProj}</div>
-      <div class="kpi-sub">${lateCount} atrasado${lateCount!==1?'s':''} · ${aguardandoCount} aguardando aprovação</div>
+      <div class="kpi-sub">${lateCount} atrasado${lateCount!==1?'s':''}</div>
     </div>
     <div class="kpi-card accent-green">
       <div class="kpi-label">Frota mapeada</div>
@@ -1628,7 +1577,7 @@ async function renderDashboard(){
       const en=new Date(st);en.setDate(en.getDate()+pr);
       const left=Math.max(0,(st-minD)/864e5/span*100);
       const width=Math.min(100-left,(en-st)/864e5/span*100);
-      const barClass={done:'ok',late:'late',aguardando:'risk',andamento:'new',new:'new'}[status]||'new';
+      const barClass={late:'late',andamento:'new',new:'new'}[status]||'new';
       html+=`<div class="timeline-item">
         <div class="tl-name" title="${e(p.name)}">${e(p.name)}</div>
         <div class="tl-bar-wrap">
@@ -1697,9 +1646,9 @@ function exportXLSX(){
   if(d.frPlanilha?.rows?.length){
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([d.frPlanilha.headers,...d.frPlanilha.rows]),'Frota - Planilha');
   }
-  const br2=[['ID','Endereço','Responsável','Contato','Veículos']];F.bases.forEach(b=>br2.push([b.id,b.end,b.resp,b.tel,b.veic]));
+  const br2=[['ID','Endereço','Responsável','Contato','Veículos','Documentação p/ acesso']];F.bases.forEach(b=>br2.push([b.id,b.end,b.resp,b.tel,b.veic,b.doc]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(br2),'Bases');
-  const evr=[['Base','Produto','Quantidade','Item/equipamento extra','Observações']];(F.envios||[]).forEach(v=>evr.push([v.base,v.produto,v.qtd,v.extra,v.obs]));
+  const evr=[['Base','Produto','Operadora do chip','Quantidade','Item/equipamento extra','Observações']];(F.envios||[]).forEach(v=>evr.push([v.base,v.produto,v.operadora,v.qtd,v.extra,v.obs]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(evr),'Envios');
   const rr=[['Tipo','Descrição','Impacto','Mitigação']];F.risks.forEach(r=>rr.push([r.tipo,r.desc,r.imp,r.mit]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rr),'Riscos');
@@ -1726,8 +1675,8 @@ function exportPDF(mode='interno'){
   const adesao=F.costs.filter(c=>c.cat==='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
   const dif=adesao-custos;
   const stH=F.stk.map(s=>`<tr><td>${s.papel}</td><td>${s.nome}</td><td>${s.empresa}</td><td>${s.tel}</td><td>${s.email}</td></tr>`).join('');
-  const bH=F.bases.map(b=>`<tr><td>${b.id}</td><td>${b.end}</td><td>${b.resp}</td><td>${b.tel}</td><td>${b.veic}</td></tr>`).join('');
-  const evH=(F.envios||[]).map(v=>`<tr><td>${v.base||''}</td><td>${v.produto||''}</td><td>${v.qtd||''}</td><td>${v.extra||''}</td><td>${v.obs||''}</td></tr>`).join('');
+  const bH=F.bases.map(b=>`<tr><td>${b.id}</td><td>${b.end}</td><td>${b.resp}</td><td>${b.tel}</td><td>${b.veic}</td><td>${b.doc||''}</td></tr>`).join('');
+  const evH=(F.envios||[]).map(v=>`<tr><td>${v.base||''}</td><td>${v.produto||''}</td><td>${v.operadora||''}</td><td>${v.qtd||''}</td><td>${v.extra||''}</td><td>${v.obs||''}</td></tr>`).join('');
   const rH=F.risks.map(r=>`<tr><td>${r.tipo}</td><td>${r.desc}</td><td>${r.imp}</td><td>${r.mit}</td></tr>`).join('');
   const cH=F.costs.map(c=>`<tr><td>${c.desc}</td><td>${c.cat}</td><td>${c.status}</td><td style="text-align:right">${brl(c.val)}</td><td>${c.data}</td></tr>`).join('');
 
@@ -1788,9 +1737,9 @@ function exportPDF(mode='interno'){
   <div class="kv"><div class="k">Total contratado</div><div class="v">${d.frTotal||''}</div><div class="k">Tipo/Modelo</div><div class="v">${d.frTipo||''}</div><div class="k">Atende ao produto contratado?</div><div class="v">${d.frAtende||''}</div><div class="k">Observações de compatibilidade</div><div class="v"><pre>${d.frObscompat||''}</pre></div><div class="k">Customizações</div><div class="v"><pre>${d.frCustom||''}</pre></div></div>
   ${d.frPlanilha?.rows?.length?`<p style="font-size:11px;color:#5a6080;margin-bottom:6px">Planilha anexada: ${d.frPlanilha.nome} (${d.frPlanilha.rows.length} veículo${d.frPlanilha.rows.length!==1?'s':''})</p><table><thead><tr>${d.frPlanilha.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${d.frPlanilha.rows.map(r=>`<tr>${d.frPlanilha.headers.map((_,i)=>`<td>${r[i]??''}</td>`).join('')}</tr>`).join('')}</tbody></table>`:''}
   ${sec('Bases de operação e instalação')}
-  <table><thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Veículos</th></tr></thead><tbody>${bH}</tbody></table>
+  <table><thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Veículos</th><th>Documentação p/ acesso</th></tr></thead><tbody>${bH}</tbody></table>
   ${sec('Logística de envios')}
-  <table><thead><tr><th>Base</th><th>Produto</th><th>Quantidade</th><th>Item/equipamento extra</th><th>Observações</th></tr></thead><tbody>${evH}</tbody></table>
+  <table><thead><tr><th>Base</th><th>Produto</th><th>Operadora do chip</th><th>Quantidade</th><th>Item/equipamento extra</th><th>Observações</th></tr></thead><tbody>${evH}</tbody></table>
   ${sec('Gestão de riscos e premissas')}
   <table><thead><tr><th>Tipo</th><th>Descrição</th><th>Impacto</th><th>Mitigação</th></tr></thead><tbody>${rH}</tbody></table>
   ${sec('Cronograma — Planejado vs. Executado')}
