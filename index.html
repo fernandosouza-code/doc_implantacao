@@ -153,6 +153,12 @@ table.itbl td input:disabled,table.itbl td select:disabled{color:var(--text3);cu
 .gantt-toolbar input[type=number]{width:68px}
 .btn-ghost{font-size:12px;font-family:'Geist',sans-serif;padding:6px 13px;border-radius:var(--radius);border:1px solid var(--gray200);background:#fff;color:var(--navy);cursor:pointer;font-weight:500}
 .btn-ghost:hover{border-color:var(--navy);background:var(--gray50)}
+.doc-files{display:flex;flex-wrap:wrap;gap:4px}
+.doc-file-chip{display:inline-flex;align-items:center;gap:3px;font-size:10px;background:var(--gray100);border-radius:10px;padding:2px 4px 2px 8px}
+.doc-file-chip a{color:var(--navy);text-decoration:none}
+.doc-file-chip a:hover{text-decoration:underline}
+.doc-file-chip button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 4px;line-height:1}
+.doc-file-chip button:hover{color:var(--red)}
 .gantt-legend{display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap}
 .gleg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
 .gleg-sq{width:10px;height:10px;border-radius:2px}
@@ -484,11 +490,11 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
         <div class="card-num">4</div><div class="card-title">Logística de envios</div><div class="card-chev">▾</div>
       </div>
       <div class="card-body">
-        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Logística de envios</strong>Área do time de envios — o que precisa sair da Cobli para cada base do cliente, do produto principal a qualquer item extra.<ul><li><b>Base:</b> selecione entre as bases já cadastradas abaixo</li><li><b>Produto:</b> qual produto vai para aquela base</li><li><b>Operadora do chip:</b> melhor operadora de sinal para os dispositivos daquela base</li><li><b>Multi operadora:</b> marque quando o projeto precisar de mais de uma operadora (ex: bases com cobertura ruim de uma operadora só)</li><li><b>Quantidade:</b> quantas unidades enviar</li><li><b>Item/equipamento extra:</b> suportes, conduítes, cabos ou qualquer material fora do padrão</li></ul></div></div>
+        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Logística de envios</strong>Área do time de envios — o que precisa sair da Cobli para cada base do cliente, do produto principal a qualquer item extra.<ul><li><b>Base:</b> selecione entre as bases já cadastradas abaixo</li><li><b>Produto:</b> qual produto vai para aquela base</li><li><b>Operadora do chip:</b> melhor operadora de sinal para os dispositivos daquela base — use "Multi Operadora" quando a base precisar de mais de uma operadora</li><li><b>Quantidade:</b> quantas unidades enviar</li><li><b>Item/equipamento extra:</b> suportes, conduítes, cabos ou qualquer material fora do padrão</li></ul></div></div>
         <datalist id="envio-bases-datalist"></datalist>
-        <datalist id="envio-operadoras-datalist"><option value="Vivo"><option value="Claro"><option value="TIM"><option value="Oi"></datalist>
+        <datalist id="envio-operadoras-datalist"><option value="Vivo"><option value="Claro"><option value="Multi Operadora"></datalist>
         <div class="tbl-wrap"><table class="itbl">
-          <thead><tr><th>Base</th><th>Produto</th><th>Operadora do chip</th><th style="width:90px">Multi operadora</th><th style="width:90px">Quantidade</th><th>Item / equipamento extra</th><th>Observações</th><th></th></tr></thead>
+          <thead><tr><th>Base</th><th>Produto</th><th>Operadora do chip</th><th style="width:90px">Quantidade</th><th>Item / equipamento extra</th><th>Observações</th><th></th></tr></thead>
           <tbody id="envio-body"></tbody>
         </table></div>
         <button class="add-row" onclick="addEnvio()">+ adicionar envio</button>
@@ -500,9 +506,9 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
         <div class="card-num">5</div><div class="card-title">Bases de operação e instalação</div><div class="card-chev">▾</div>
       </div>
       <div class="card-body">
-        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Bases de operação</strong>Registra onde as instalações acontecerão — essencial para logística de envio.<ul><li><b>ID da base:</b> nome de referência (ex: Matriz, Base SP)</li><li><b>Endereço:</b> necessário para envio de equipamentos e deslocamento</li><li><b>Responsável local:</b> pessoa do cliente que acompanha o checklist — obrigatório</li><li><b>Qtd. de veículos:</b> define alocação de técnicos e tempo em cada base</li><li><b>Documentação p/ acesso:</b> o que a base exige para liberar entrada — ex: ASO, ficha de EPI, treinamento de segurança, cadastro prévio de visitante</li></ul></div></div>
+        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Bases de operação</strong>Registra onde as instalações acontecerão — essencial para logística de envio.<ul><li><b>ID da base:</b> nome de referência (ex: Matriz, Base SP)</li><li><b>Endereço:</b> necessário para envio de equipamentos e deslocamento</li><li><b>Responsável local:</b> pessoa do cliente que acompanha o checklist — obrigatório</li><li><b>Qtd. de veículos:</b> define alocação de técnicos e tempo em cada base</li><li><b>Documentação p/ acesso:</b> o que a base exige para liberar entrada — ex: ASO, ficha de EPI, treinamento de segurança, cadastro prévio de visitante. Use o campo abaixo para anexar os documentos de segurança do trabalho já prontos (ASO, ficha de EPI etc.)</li></ul></div></div>
         <div class="tbl-wrap"><table class="itbl">
-          <thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Veículos</th><th>Documentação p/ acesso</th><th></th></tr></thead>
+          <thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Veículos</th><th>Documentação p/ acesso</th><th>Documentos de segurança</th><th></th></tr></thead>
           <tbody id="base-body"></tbody>
         </table></div>
         <button class="add-row" onclick="addBase()">+ adicionar base</button>
@@ -1223,18 +1229,49 @@ function renderMatriz(){
     document.getElementById('matriz-body').innerHTML = html;
 }
 
-function renderBases(){ 
-    const html = F.bases.map((b,i)=>`<tr>
+function renderBases(){
+    const html = F.bases.map((b,i)=>{
+        const arquivos = b.docsFiles||[];
+        return `<tr>
         <td><input value="${e(b.id)}" onchange="F.bases[${i}].id=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input value="${e(b.end)}" onchange="F.bases[${i}].end=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input value="${e(b.resp)}" onchange="F.bases[${i}].resp=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input value="${e(b.tel)}" onchange="F.bases[${i}].tel=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input type="number" value="${b.veic}" onchange="F.bases[${i}].veic=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input value="${e(b.doc)}" placeholder="Ex: ASO, ficha de EPI, treinamento" onchange="F.bases[${i}].doc=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td>
+          <div class="doc-files">${arquivos.map((f,j)=>`<span class="doc-file-chip"><a href="${f.data}" download="${e(f.nome)}" title="${e(f.nome)}">📄 ${e(f.nome.length>16?f.nome.slice(0,13)+'…':f.nome)}</a>${window.canEditCurrent?`<button type="button" onclick="removeBaseDoc(${i},${j})">×</button>`:''}</span>`).join('')}</div>
+          ${window.canEditCurrent?`<input type="file" id="base-doc-input-${i}" multiple style="display:none" onchange="handleBaseDocUpload(${i},event)"><button type="button" class="btn-ghost" style="margin-top:4px;font-size:11px;padding:3px 8px" onclick="document.getElementById('base-doc-input-${i}').click()">📎 anexar</button>`:''}
+        </td>
         <td>${window.canEditCurrent ? `<button class="del-btn" onclick="F.bases.splice(${i},1);saveF();renderBases();renderEnvios()">×</button>` : ''}</td>
-    </tr>`).join('');
+    </tr>`;
+    }).join('');
     document.getElementById('base-body').innerHTML = html;
     renderEnvios();
+}
+
+function handleBaseDocUpload(i, ev){
+    const files = Array.from(ev.target.files||[]);
+    ev.target.value = '';
+    if(!files.length) return;
+    F.bases[i].docsFiles = F.bases[i].docsFiles || [];
+    let pendentes = files.length;
+    files.forEach(file=>{
+        const reader = new FileReader();
+        reader.onload = evt => {
+            F.bases[i].docsFiles.push({ nome: file.name, data: evt.target.result });
+            pendentes--;
+            if(pendentes===0){ saveF(); renderBases(); }
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function removeBaseDoc(i, j){
+    if(!F.bases[i]?.docsFiles) return;
+    F.bases[i].docsFiles.splice(j,1);
+    saveF();
+    renderBases();
 }
 
 function renderEnvios(){
@@ -1244,7 +1281,6 @@ function renderEnvios(){
         <td><input list="envio-bases-datalist" value="${e(v.base)}" onchange="F.envios[${i}].base=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input value="${e(v.produto)}" onchange="F.envios[${i}].produto=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input list="envio-operadoras-datalist" value="${e(v.operadora)}" onchange="F.envios[${i}].operadora=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
-        <td style="text-align:center"><input type="checkbox" ${v.multiOperadora?'checked':''} onchange="F.envios[${i}].multiOperadora=this.checked;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input type="number" value="${v.qtd}" onchange="F.envios[${i}].qtd=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input value="${e(v.extra)}" onchange="F.envios[${i}].extra=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input value="${e(v.obs)}" onchange="F.envios[${i}].obs=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
@@ -1282,8 +1318,8 @@ function renderCosts(){
 }
 function addStk() { F.stk.push({papel:'',nome:'',empresa:'',tel:'',email:''}); saveF(); renderStk(); }
 function addMatriz() { F.matriz.push({assunto:'',para:'',quando:'',como:'',resp:''}); saveF(); renderMatriz(); }
-function addBase() { F.bases.push({id:'',end:'',resp:'',tel:'',veic:0,doc:''}); saveF(); renderBases(); }
-function addEnvio() { F.envios.push({base:'',produto:'',operadora:'',multiOperadora:false,qtd:'',extra:'',obs:''}); saveF(); renderEnvios(); }
+function addBase() { F.bases.push({id:'',end:'',resp:'',tel:'',veic:0,doc:'',docsFiles:[]}); saveF(); renderBases(); }
+function addEnvio() { F.envios.push({base:'',produto:'',operadora:'',qtd:'',extra:'',obs:''}); saveF(); renderEnvios(); }
 function addRisk() { F.risks.push({tipo:'Risco',desc:'',imp:'',mit:''}); saveF(); renderRisks(); }
 function addCost(){F.costs.push({desc:'',cat:'Prestador',status:'Pendente',val:0,data:''});saveF();renderCosts();}
 function calcCosts(){
@@ -1647,9 +1683,9 @@ function exportXLSX(){
   if(d.frPlanilha?.rows?.length){
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([d.frPlanilha.headers,...d.frPlanilha.rows]),'Frota - Planilha');
   }
-  const evr=[['Base','Produto','Operadora do chip','Multi operadora','Quantidade','Item/equipamento extra','Observações']];(F.envios||[]).forEach(v=>evr.push([v.base,v.produto,v.operadora,v.multiOperadora?'Sim':'Não',v.qtd,v.extra,v.obs]));
+  const evr=[['Base','Produto','Operadora do chip','Quantidade','Item/equipamento extra','Observações']];(F.envios||[]).forEach(v=>evr.push([v.base,v.produto,v.operadora,v.qtd,v.extra,v.obs]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(evr),'Envios');
-  const br2=[['ID','Endereço','Responsável','Contato','Veículos','Documentação p/ acesso']];F.bases.forEach(b=>br2.push([b.id,b.end,b.resp,b.tel,b.veic,b.doc]));
+  const br2=[['ID','Endereço','Responsável','Contato','Veículos','Documentação p/ acesso','Documentos de segurança']];F.bases.forEach(b=>br2.push([b.id,b.end,b.resp,b.tel,b.veic,b.doc,(b.docsFiles||[]).map(f=>f.nome).join(', ')]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(br2),'Bases');
   const rr=[['Tipo','Descrição','Impacto','Mitigação']];F.risks.forEach(r=>rr.push([r.tipo,r.desc,r.imp,r.mit]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rr),'Riscos');
@@ -1676,8 +1712,8 @@ function exportPDF(mode='interno'){
   const adesao=F.costs.filter(c=>c.cat==='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
   const dif=adesao-custos;
   const stH=F.stk.map(s=>`<tr><td>${s.papel}</td><td>${s.nome}</td><td>${s.empresa}</td><td>${s.tel}</td><td>${s.email}</td></tr>`).join('');
-  const bH=F.bases.map(b=>`<tr><td>${b.id}</td><td>${b.end}</td><td>${b.resp}</td><td>${b.tel}</td><td>${b.veic}</td><td>${b.doc||''}</td></tr>`).join('');
-  const evH=(F.envios||[]).map(v=>`<tr><td>${v.base||''}</td><td>${v.produto||''}</td><td>${v.operadora||''}</td><td>${v.multiOperadora?'Sim':'Não'}</td><td>${v.qtd||''}</td><td>${v.extra||''}</td><td>${v.obs||''}</td></tr>`).join('');
+  const bH=F.bases.map(b=>`<tr><td>${b.id}</td><td>${b.end}</td><td>${b.resp}</td><td>${b.tel}</td><td>${b.veic}</td><td>${b.doc||''}</td><td>${(b.docsFiles||[]).map(f=>`<a href="${f.data}" download="${f.nome}">${f.nome}</a>`).join('<br>')||'—'}</td></tr>`).join('');
+  const evH=(F.envios||[]).map(v=>`<tr><td>${v.base||''}</td><td>${v.produto||''}</td><td>${v.operadora||''}</td><td>${v.qtd||''}</td><td>${v.extra||''}</td><td>${v.obs||''}</td></tr>`).join('');
   const rH=F.risks.map(r=>`<tr><td>${r.tipo}</td><td>${r.desc}</td><td>${r.imp}</td><td>${r.mit}</td></tr>`).join('');
   const cH=F.costs.map(c=>`<tr><td>${c.desc}</td><td>${c.cat}</td><td>${c.status}</td><td style="text-align:right">${brl(c.val)}</td><td>${c.data}</td></tr>`).join('');
 
@@ -1738,9 +1774,9 @@ function exportPDF(mode='interno'){
   <div class="kv"><div class="k">Total contratado</div><div class="v">${d.frTotal||''}</div><div class="k">Tipo/Modelo</div><div class="v">${d.frTipo||''}</div><div class="k">Atende ao produto contratado?</div><div class="v">${d.frAtende||''}</div><div class="k">Observações de compatibilidade</div><div class="v"><pre>${d.frObscompat||''}</pre></div><div class="k">Customizações</div><div class="v"><pre>${d.frCustom||''}</pre></div></div>
   ${d.frPlanilha?.rows?.length?`<p style="font-size:11px;color:#5a6080;margin-bottom:6px">Planilha anexada: ${d.frPlanilha.nome} (${d.frPlanilha.rows.length} veículo${d.frPlanilha.rows.length!==1?'s':''})</p><table><thead><tr>${d.frPlanilha.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${d.frPlanilha.rows.map(r=>`<tr>${d.frPlanilha.headers.map((_,i)=>`<td>${r[i]??''}</td>`).join('')}</tr>`).join('')}</tbody></table>`:''}
   ${sec('Logística de envios')}
-  <table><thead><tr><th>Base</th><th>Produto</th><th>Operadora do chip</th><th>Multi operadora</th><th>Quantidade</th><th>Item/equipamento extra</th><th>Observações</th></tr></thead><tbody>${evH}</tbody></table>
+  <table><thead><tr><th>Base</th><th>Produto</th><th>Operadora do chip</th><th>Quantidade</th><th>Item/equipamento extra</th><th>Observações</th></tr></thead><tbody>${evH}</tbody></table>
   ${sec('Bases de operação e instalação')}
-  <table><thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Veículos</th><th>Documentação p/ acesso</th></tr></thead><tbody>${bH}</tbody></table>
+  <table><thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Veículos</th><th>Documentação p/ acesso</th><th>Documentos de segurança</th></tr></thead><tbody>${bH}</tbody></table>
   ${sec('Gestão de riscos e premissas')}
   <table><thead><tr><th>Tipo</th><th>Descrição</th><th>Impacto</th><th>Mitigação</th></tr></thead><tbody>${rH}</tbody></table>
   ${sec('Cronograma — Planejado vs. Executado')}
