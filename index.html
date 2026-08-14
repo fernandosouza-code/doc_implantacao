@@ -463,10 +463,21 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
         <div class="card-num">3</div><div class="card-title">Levantamento da frota</div><div class="card-chev">▾</div>
       </div>
       <div class="card-body">
-        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Levantamento da frota</strong>Preenchido uma única vez pelo consultor de Field Engineering, no mapeamento técnico com o cliente — serve de checklist para o time de CX executar a implantação e não é atualizado ao longo do projeto.<ul><li><b>Total contratado:</b> define o escopo técnico — base para custo, prazo e alocação de técnicos</li><li><b>Tipo/modelo:</b> cada modelo pode exigir instalação diferente</li><li><b>Customizações:</b> tudo que foge do padrão — alinhe antes com os técnicos</li></ul></div></div>
+        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Levantamento da frota</strong>Preenchido uma única vez pelo consultor de Field Engineering, no mapeamento técnico com o cliente — serve de checklist para o time de CX executar a implantação e não é atualizado ao longo do projeto.<ul><li><b>Total contratado:</b> define o escopo técnico — base para custo, prazo e alocação de técnicos</li><li><b>Tipo/modelo:</b> cada modelo pode exigir instalação diferente</li><li><b>Atende ao produto contratado?</b> confirma em campo se o que foi vendido cobre a frota real — registre exceções nas observações</li><li><b>Customizações:</b> tudo que foge do padrão — alinhe antes com os técnicos</li></ul></div></div>
         <div class="fg c2">
           <div class="f"><label>Total contratado</label><input type="number" id="fr-total" onchange="saveF()"></div>
           <div class="f"><label>Tipo / Marca / Modelo</label><input id="fr-tipo" placeholder="Ex: 29 Truck | 15 Cavalo | 4 3/4" onchange="saveF()"></div>
+        </div>
+        <div class="fg c2">
+          <div class="f"><label>Produto contratado atende à frota mapeada?</label>
+            <select id="fr-atende" onchange="saveF()">
+              <option value="">Selecione</option>
+              <option value="Sim">Sim</option>
+              <option value="Parcialmente">Parcialmente</option>
+              <option value="Não">Não</option>
+            </select>
+          </div>
+          <div class="f"><label>Observações de compatibilidade</label><textarea id="fr-obscompat" placeholder="Se não for 100%, descreva as exceções (ex: 4 veículos exigem outro produto)" onchange="saveF()"></textarea></div>
         </div>
         <div class="fg c1">
           <div class="f">
@@ -493,7 +504,7 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       <div class="card-body">
         <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Bases de operação</strong>Registra onde as instalações acontecerão — essencial para logística de envio.<ul><li><b>ID da base:</b> nome de referência (ex: Matriz, Base SP)</li><li><b>Endereço:</b> necessário para envio de equipamentos e deslocamento</li><li><b>Responsável local:</b> pessoa do cliente que acompanha o checklist — obrigatório</li><li><b>Qtd. de veículos:</b> define alocação de técnicos e tempo em cada base</li></ul></div></div>
         <div class="tbl-wrap"><table class="itbl">
-          <thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Veículos</th><th>Produto</th><th></th></tr></thead>
+          <thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Veículos</th><th></th></tr></thead>
           <tbody id="base-body"></tbody>
         </table></div>
         <button class="add-row" onclick="addBase()">+ adicionar base</button>
@@ -502,7 +513,22 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 
     <div class="card">
       <div class="card-head" onclick="toggleCard(this)">
-        <div class="card-num">5</div><div class="card-title">Gestão de riscos e premissas</div><div class="card-chev">▾</div>
+        <div class="card-num">5</div><div class="card-title">Logística de envios</div><div class="card-chev">▾</div>
+      </div>
+      <div class="card-body">
+        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Logística de envios</strong>Área do time de envios — o que precisa sair da Cobli para cada base do cliente, do produto principal a qualquer item extra.<ul><li><b>Base:</b> selecione entre as bases já cadastradas acima</li><li><b>Produto:</b> qual produto vai para aquela base</li><li><b>Quantidade:</b> quantas unidades enviar</li><li><b>Item/equipamento extra:</b> suportes, conduítes, cabos ou qualquer material fora do padrão</li></ul></div></div>
+        <datalist id="envio-bases-datalist"></datalist>
+        <div class="tbl-wrap"><table class="itbl">
+          <thead><tr><th>Base</th><th>Produto</th><th style="width:90px">Quantidade</th><th>Item / equipamento extra</th><th>Observações</th><th></th></tr></thead>
+          <tbody id="envio-body"></tbody>
+        </table></div>
+        <button class="add-row" onclick="addEnvio()">+ adicionar envio</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head" onclick="toggleCard(this)">
+        <div class="card-num">6</div><div class="card-title">Gestão de riscos e premissas</div><div class="card-chev">▾</div>
       </div>
       <div class="card-body">
         <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Riscos e premissas</strong>Antecipar problemas antes que aconteçam.<ul><li><b>Risco:</b> algo que pode atrapalhar (ex: chuva, no-show, veículos não liberados)</li><li><b>Premissa:</b> condição necessária para o projeto funcionar</li><li><b>Impacto:</b> o que acontece se o risco se concretizar</li><li><b>Mitigação:</b> o plano B</li></ul></div></div>
@@ -516,7 +542,7 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 
     <div class="card">
       <div class="card-head" onclick="toggleCard(this)">
-        <div class="card-num">6</div><div class="card-title">Custos da implantação</div><div class="card-chev">▾</div>
+        <div class="card-num">7</div><div class="card-title">Custos da implantação</div><div class="card-chev">▾</div>
       </div>
       <div class="card-body">
         <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Custos da implantação</strong>Controla o resultado financeiro em tempo real — adicione conforme ocorre.<ul><li><b>Prestador:</b> mão de obra dos técnicos</li><li><b>Viagem:</b> deslocamento e hospedagem da equipe Cobli</li><li><b>Material:</b> conduítes, suportes e ferramentas</li><li><b>Adesão:</b> valor recebido do cliente</li><li><b>Status:</b> controla o que foi pago vs. pendente</li></ul></div></div>
@@ -879,7 +905,7 @@ async function createProject() {
     // Cria registro de dados do projeto
     await supa.from('project_data').insert([{
       project_id: newProj.id,
-      form_json: { stk:[], bases:[], risks:[], costs:[], matriz:[], dados:{} },
+      form_json: { stk:[], bases:[], risks:[], costs:[], matriz:[], envios:[], dados:{} },
       gantt_json: { startDate:'', endDate:'', tasks:[] }
     }]);
 
@@ -1148,14 +1174,14 @@ function renameProject(id, ev){
 
 /* ─── FORM ─── */
 function syncFormFields() {
-  if(!F.stk)F.stk=[];if(!F.bases)F.bases=[];if(!F.risks)F.risks=[];if(!F.costs)F.costs=[];if(!F.matriz)F.matriz=[];if(!F.dados)F.dados={};
+  if(!F.stk)F.stk=[];if(!F.bases)F.bases=[];if(!F.risks)F.risks=[];if(!F.costs)F.costs=[];if(!F.matriz)F.matriz=[];if(!F.envios)F.envios=[];if(!F.dados)F.dados={};
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
   const d=F.dados;
   ['nome','resp','pat','prod','data','prazo','crit','obj','entrega'].forEach(k=>set('f-'+k,d[k]));
   set('f-status', d.projectStatus||'Em Andamento');
-  ['total','tipo','custom'].forEach(k=>set('fr-'+k,d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]));
+  ['total','tipo','atende','obscompat','custom'].forEach(k=>set('fr-'+k,d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]));
   set('c-obs',d.cObs);
-  renderStk(); renderMatriz(); renderBases(); renderRisks(); renderCosts(); renderFrPlanilha();
+  renderStk(); renderMatriz(); renderBases(); renderEnvios(); renderRisks(); renderCosts(); renderFrPlanilha();
 }
 
 function handleFrotaUpload(ev){
@@ -1216,7 +1242,7 @@ function saveF(){
   const d={...(F.dados||{})};
   ['nome','resp','pat','prod','data','prazo','crit','obj','entrega'].forEach(k=>d[k]=getVal('f-'+k));
   d.projectStatus = getVal('f-status') || 'Em Andamento';
-  ['total','tipo','custom'].forEach(k=>d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('fr-'+k));
+  ['total','tipo','atende','obscompat','custom'].forEach(k=>d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('fr-'+k));
   d.cObs=getVal('c-obs');
   F.dados=d;
   persist();
@@ -1253,12 +1279,28 @@ function renderBases(){
         <td><input value="${e(b.resp)}" onchange="F.bases[${i}].resp=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input value="${e(b.tel)}" onchange="F.bases[${i}].tel=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
         <td><input type="number" value="${b.veic}" onchange="F.bases[${i}].veic=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
-        <td>${window.canEditCurrent ? `<button class="del-btn" onclick="F.bases.splice(${i},1);saveF();renderBases()">×</button>` : ''}</td>
+        <td>${window.canEditCurrent ? `<button class="del-btn" onclick="F.bases.splice(${i},1);saveF();renderBases();renderEnvios()">×</button>` : ''}</td>
     </tr>`).join('');
     document.getElementById('base-body').innerHTML = html;
+    renderEnvios();
 }
 
-function renderRisks(){ 
+function renderEnvios(){
+    const dl = document.getElementById('envio-bases-datalist');
+    if(dl) dl.innerHTML = F.bases.map(b=>`<option value="${e(b.id)}">`).join('');
+    const html = (F.envios||[]).map((v,i)=>`<tr>
+        <td><input list="envio-bases-datalist" value="${e(v.base)}" onchange="F.envios[${i}].base=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(v.produto)}" onchange="F.envios[${i}].produto=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input type="number" value="${v.qtd}" onchange="F.envios[${i}].qtd=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(v.extra)}" onchange="F.envios[${i}].extra=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td><input value="${e(v.obs)}" onchange="F.envios[${i}].obs=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}></td>
+        <td>${window.canEditCurrent ? `<button class="del-btn" onclick="F.envios.splice(${i},1);saveF();renderEnvios()">×</button>` : ''}</td>
+    </tr>`).join('');
+    const body = document.getElementById('envio-body');
+    if(body) body.innerHTML = html;
+}
+
+function renderRisks(){
     const html = F.risks.map((r,i)=>`<tr>
         <td><select onchange="F.risks[${i}].tipo=this.value;saveF()" ${!window.canEditCurrent?'disabled':''}>
             <option ${r.tipo==='Risco'?'selected':''}>Risco</option>
@@ -1287,6 +1329,7 @@ function renderCosts(){
 function addStk() { F.stk.push({papel:'',nome:'',empresa:'',tel:'',email:''}); saveF(); renderStk(); }
 function addMatriz() { F.matriz.push({assunto:'',para:'',quando:'',como:'',resp:''}); saveF(); renderMatriz(); }
 function addBase() { F.bases.push({id:'',end:'',resp:'',tel:'',veic:0}); saveF(); renderBases(); }
+function addEnvio() { F.envios.push({base:'',produto:'',qtd:'',extra:'',obs:''}); saveF(); renderEnvios(); }
 function addRisk() { F.risks.push({tipo:'Risco',desc:'',imp:'',mit:''}); saveF(); renderRisks(); }
 function addCost(){F.costs.push({desc:'',cat:'Prestador',status:'Pendente',val:0,data:''});saveF();renderCosts();}
 function calcCosts(){
@@ -1650,12 +1693,14 @@ function exportXLSX(){
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sr),'Stakeholders');
   const mr=[['Informação/Assunto','Para quem','Quando','Como','Responsável']];F.matriz.forEach(m=>mr.push([m.assunto,m.para,m.quando,m.como,m.resp]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(mr),'Matriz de Comunicação');
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Item','Valor'],['Total contratado',d.frTotal],['Tipo/Modelo',d.frTipo],['Customizações',d.frCustom]]),'Frota');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Item','Valor'],['Total contratado',d.frTotal],['Tipo/Modelo',d.frTipo],['Atende ao produto contratado?',d.frAtende],['Observações de compatibilidade',d.frObscompat],['Customizações',d.frCustom]]),'Frota');
   if(d.frPlanilha?.rows?.length){
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([d.frPlanilha.headers,...d.frPlanilha.rows]),'Frota - Planilha');
   }
-  const br2=[['ID','Endereço','Responsável','Contato','Veículos','Produto']];F.bases.forEach(b=>br2.push([b.id,b.end,b.resp,b.tel,b.veic,b.prod]));
+  const br2=[['ID','Endereço','Responsável','Contato','Veículos']];F.bases.forEach(b=>br2.push([b.id,b.end,b.resp,b.tel,b.veic]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(br2),'Bases');
+  const evr=[['Base','Produto','Quantidade','Item/equipamento extra','Observações']];(F.envios||[]).forEach(v=>evr.push([v.base,v.produto,v.qtd,v.extra,v.obs]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(evr),'Envios');
   const rr=[['Tipo','Descrição','Impacto','Mitigação']];F.risks.forEach(r=>rr.push([r.tipo,r.desc,r.imp,r.mit]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rr),'Riscos');
   const cr=[['Descrição','Categoria','Status','Valor (R$)','Data']];F.costs.forEach(c=>cr.push([c.desc,c.cat,c.status,c.val,c.data]));
@@ -1682,6 +1727,7 @@ function exportPDF(mode='interno'){
   const dif=adesao-custos;
   const stH=F.stk.map(s=>`<tr><td>${s.papel}</td><td>${s.nome}</td><td>${s.empresa}</td><td>${s.tel}</td><td>${s.email}</td></tr>`).join('');
   const bH=F.bases.map(b=>`<tr><td>${b.id}</td><td>${b.end}</td><td>${b.resp}</td><td>${b.tel}</td><td>${b.veic}</td></tr>`).join('');
+  const evH=(F.envios||[]).map(v=>`<tr><td>${v.base||''}</td><td>${v.produto||''}</td><td>${v.qtd||''}</td><td>${v.extra||''}</td><td>${v.obs||''}</td></tr>`).join('');
   const rH=F.risks.map(r=>`<tr><td>${r.tipo}</td><td>${r.desc}</td><td>${r.imp}</td><td>${r.mit}</td></tr>`).join('');
   const cH=F.costs.map(c=>`<tr><td>${c.desc}</td><td>${c.cat}</td><td>${c.status}</td><td style="text-align:right">${brl(c.val)}</td><td>${c.data}</td></tr>`).join('');
 
@@ -1739,10 +1785,12 @@ function exportPDF(mode='interno'){
   <h3 style="font-size:12px;font-weight:600;color:#07074E;margin:12px 0 6px">2.1 Matriz de comunicação</h3>
   <table><thead><tr><th>Informação / Assunto</th><th>Para quem</th><th>Quando</th><th>Como</th><th>Responsável</th></tr></thead><tbody>${F.matriz.map(m=>`<tr><td>${m.assunto||''}</td><td>${m.para||''}</td><td>${m.quando||''}</td><td>${m.como||''}</td><td>${m.resp||''}</td></tr>`).join('')}</tbody></table>
   ${sec('Levantamento da frota')}
-  <div class="kv"><div class="k">Total contratado</div><div class="v">${d.frTotal||''}</div><div class="k">Tipo/Modelo</div><div class="v">${d.frTipo||''}</div><div class="k">Customizações</div><div class="v"><pre>${d.frCustom||''}</pre></div></div>
+  <div class="kv"><div class="k">Total contratado</div><div class="v">${d.frTotal||''}</div><div class="k">Tipo/Modelo</div><div class="v">${d.frTipo||''}</div><div class="k">Atende ao produto contratado?</div><div class="v">${d.frAtende||''}</div><div class="k">Observações de compatibilidade</div><div class="v"><pre>${d.frObscompat||''}</pre></div><div class="k">Customizações</div><div class="v"><pre>${d.frCustom||''}</pre></div></div>
   ${d.frPlanilha?.rows?.length?`<p style="font-size:11px;color:#5a6080;margin-bottom:6px">Planilha anexada: ${d.frPlanilha.nome} (${d.frPlanilha.rows.length} veículo${d.frPlanilha.rows.length!==1?'s':''})</p><table><thead><tr>${d.frPlanilha.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${d.frPlanilha.rows.map(r=>`<tr>${d.frPlanilha.headers.map((_,i)=>`<td>${r[i]??''}</td>`).join('')}</tr>`).join('')}</tbody></table>`:''}
   ${sec('Bases de operação e instalação')}
   <table><thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Veículos</th></tr></thead><tbody>${bH}</tbody></table>
+  ${sec('Logística de envios')}
+  <table><thead><tr><th>Base</th><th>Produto</th><th>Quantidade</th><th>Item/equipamento extra</th><th>Observações</th></tr></thead><tbody>${evH}</tbody></table>
   ${sec('Gestão de riscos e premissas')}
   <table><thead><tr><th>Tipo</th><th>Descrição</th><th>Impacto</th><th>Mitigação</th></tr></thead><tbody>${rH}</tbody></table>
   ${sec('Cronograma — Planejado vs. Executado')}
