@@ -503,12 +503,16 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
         <div class="card-num">5</div><div class="card-title">Bases de operação e instalação</div><div class="card-chev">▾</div>
       </div>
       <div class="card-body">
-        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Bases de operação</strong>Registra onde as instalações acontecerão — essencial para logística de envio.<ul><li><b>ID da base:</b> nome de referência (ex: Matriz, Base SP)</li><li><b>Endereço:</b> necessário para envio de equipamentos e deslocamento</li><li><b>Responsável local:</b> pessoa do cliente que acompanha o checklist — obrigatório</li><li><b>Responsável pelo agendamento:</b> quem do cliente organiza a agenda de instalação naquela base, e o contato dessa pessoa</li><li><b>Qtd. de veículos:</b> define alocação de técnicos e tempo em cada base</li><li><b>Documentação p/ acesso:</b> marque quais documentos a base exige para liberar entrada (ASO, ficha de EPI etc.) — use "Outro" para o que não estiver na lista</li></ul></div></div>
+        <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Bases de operação</strong>Registra onde as instalações acontecerão — essencial para logística de envio.<ul><li><b>ID da base:</b> nome de referência (ex: Matriz, Base SP)</li><li><b>Endereço:</b> necessário para envio de equipamentos e deslocamento</li><li><b>Responsável local:</b> pessoa do cliente que acompanha o checklist — obrigatório</li><li><b>Responsável pelo agendamento:</b> quem do cliente organiza a agenda de instalação naquela base, e o contato dessa pessoa</li><li><b>Qtd. de veículos:</b> define alocação de técnicos e tempo em cada base</li><li><b>Documentação p/ acesso:</b> marque quais documentos a base exige para liberar entrada (ASO, ficha de EPI etc.) — use "Outro" para o que não estiver na lista</li><li><b>Subir planilha:</b> alternativa a preencher linha por linha — use colunas com os cabeçalhos ID, Endereço, Responsável, Contato, Responsável agendamento, Contato agendamento, Veículos e Documentação p/ acesso</li></ul></div></div>
         <div class="tbl-wrap"><table class="itbl">
           <thead><tr><th>ID</th><th>Endereço</th><th>Responsável</th><th>Contato</th><th>Responsável agendamento</th><th>Contato agendamento</th><th>Veículos</th><th>Documentação p/ acesso</th><th></th></tr></thead>
           <tbody id="base-body"></tbody>
         </table></div>
-        <button class="add-row" onclick="addBase()">+ adicionar base</button>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px">
+          <button class="add-row" style="margin-top:0;width:auto;flex:1" onclick="addBase()">+ adicionar base</button>
+          <input type="file" id="base-planilha-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleBasePlanilhaUpload(event)">
+          <button type="button" class="btn-ghost" id="btn-upload-bases" onclick="document.getElementById('base-planilha-input').click()">📎 subir planilha (.xlsx, .csv)</button>
+        </div>
       </div>
     </div>
 
@@ -1247,6 +1251,8 @@ function renderBases(){
     }).join('');
     document.getElementById('base-body').innerHTML = html;
     renderEnvios();
+    const uploadBtn=document.getElementById('btn-upload-bases');
+    if(uploadBtn) uploadBtn.style.display = window.canEditCurrent ? 'inline-block' : 'none';
 }
 
 function toggleDocTipo(i, tipo){
@@ -1303,6 +1309,57 @@ function renderCosts(){
 function addStk() { F.stk.push({papel:'',nome:'',empresa:'',tel:'',email:''}); saveF(); renderStk(); }
 function addMatriz() { F.matriz.push({assunto:'',para:'',quando:'',como:'',resp:''}); saveF(); renderMatriz(); }
 function addBase() { F.bases.push({id:'',end:'',resp:'',tel:'',respAgend:'',contAgend:'',veic:0,doc:''}); saveF(); renderBases(); }
+
+function normalizeHeaderBase(h){
+  return String(h||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,'');
+}
+const BASE_COL_MAP = {
+  'id':'id', 'idbase':'id', 'base':'id',
+  'endereco':'end',
+  'responsavel':'resp',
+  'contato':'tel', 'telefone':'tel',
+  'responsavelagendamento':'respAgend',
+  'contatoagendamento':'contAgend', 'telefoneagendamento':'contAgend',
+  'veiculos':'veic', 'qtdveiculos':'veic', 'qtddeveiculos':'veic',
+  'documentacaopacesso':'doc', 'documentacao':'doc'
+};
+function handleBasePlanilhaUpload(ev){
+  const file = ev.target.files[0];
+  ev.target.value = '';
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try{
+      const wb = XLSX.read(new Uint8Array(evt.target.result), {type:'array'});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:''})
+        .filter(r => r.some(c => String(c).trim()!==''));
+      if(!rows.length){ alert('Não encontrei dados nessa planilha.'); return; }
+      const headers = rows[0].map(h=>normalizeHeaderBase(h));
+      const colIdx = {};
+      headers.forEach((h,idx)=>{ if(BASE_COL_MAP[h] && !(BASE_COL_MAP[h] in colIdx)) colIdx[BASE_COL_MAP[h]] = idx; });
+      if(!('id' in colIdx)){
+        alert('Não encontrei uma coluna "ID" (ou "Base") na planilha. Confira o cabeçalho e tente novamente.');
+        return;
+      }
+      const pick = (r,key) => colIdx[key]!==undefined ? String(r[colIdx[key]]??'').trim() : '';
+      const novas = rows.slice(1).map(r=>({
+        id: pick(r,'id'), end: pick(r,'end'), resp: pick(r,'resp'), tel: pick(r,'tel'),
+        respAgend: pick(r,'respAgend'), contAgend: pick(r,'contAgend'),
+        veic: colIdx.veic!==undefined ? (parseInt(r[colIdx.veic])||0) : 0,
+        doc: pick(r,'doc')
+      })).filter(b=>b.id);
+      if(!novas.length){ alert('Nenhuma linha com ID preenchido foi encontrada.'); return; }
+      F.bases.push(...novas);
+      saveF();
+      renderBases();
+      alert(`${novas.length} base${novas.length!==1?'s':''} importada${novas.length!==1?'s':''} da planilha.`);
+    }catch(err){
+      alert('Não consegui ler essa planilha. Verifique se é um arquivo .xlsx, .xls ou .csv válido.');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
 function addEnvio() { F.envios.push({base:'',produto:'',operadora:'',qtd:'',extra:'',obs:''}); saveF(); renderEnvios(); }
 function addRisk() { F.risks.push({tipo:'Risco',desc:'',imp:'',mit:''}); saveF(); renderRisks(); }
 function addCost(){F.costs.push({desc:'',cat:'Prestador',status:'Pendente',val:0,data:''});saveF();renderCosts();}
