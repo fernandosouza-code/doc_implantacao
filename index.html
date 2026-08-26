@@ -359,6 +359,7 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
     <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
       <span style="font-size:11px;color:rgba(255,255,255,0.55);white-space:nowrap;font-weight:500">Cliente:</span>
       <select id="filter-cliente" onchange="onFilterCliente()" style="font-family:'Geist',sans-serif;font-size:12px;font-weight:600;padding:5px 10px;background:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:var(--cobli-indigo);cursor:pointer;min-width:170px;max-width:260px"></select>
+      <button type="button" id="btn-edit-cliente" onclick="openRenameModal()" title="Editar nome do projeto" style="font-size:13px;color:rgba(255,255,255,.6);padding:5px 8px;border-radius:6px;cursor:pointer;border:1px dashed rgba(255,255,255,.2);background:transparent;font-family:'Geist',sans-serif;flex-shrink:0;line-height:1">✎</button>
     </div>
     <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
       <span style="font-size:11px;color:rgba(255,255,255,0.55);white-space:nowrap;font-weight:500">Responsável:</span>
@@ -619,6 +620,18 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
   </div>
 </div>
 
+<div class="modal-bg" id="rename-modal">
+  <div class="modal">
+    <h3>Editar nome do projeto</h3>
+    <p>Altera o nome exibido para este cliente em toda a documentação.</p>
+    <input type="text" id="rename-input" maxlength="40">
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeRenameModal()">Cancelar</button>
+      <button class="modal-btn primary" onclick="confirmRenameModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="user-modal">
   <div class="modal" style="width:480px; max-width: 95%;">
     <h3>Gestão de Usuários</h3>   
@@ -829,6 +842,9 @@ async function switchProject(id) {
   
   const btnDelete = document.getElementById('btn-delete-proj');
   if(btnDelete) btnDelete.style.display = window.canEditCurrent ? 'block' : 'none';
+
+  const btnEditCliente = document.getElementById('btn-edit-cliente');
+  if(btnEditCliente) btnEditCliente.style.display = window.canEditCurrent ? 'inline-block' : 'none';
 
   setSaved('saved');
 }
@@ -1105,31 +1121,27 @@ function onFilterResponsavel() {
   } else { clienteSelect.value = currentId || ''; }
 }
 
-function renameProject(id, ev){
-  ev.stopPropagation();
-  const p = projects.find(x=>x.id===id);
-  const tab = document.getElementById('ptab-'+id);
-  const label = tab.querySelector('.proj-name-label');
-  const oldName = p.name;
+function openRenameModal(){
+  if(!currentId) return;
+  const p = projects.find(x=>x.id===currentId);
+  if(!p) return;
+  document.getElementById('rename-input').value = p.name;
+  document.getElementById('rename-modal').classList.add('open');
+  setTimeout(()=>{
+    const input=document.getElementById('rename-input');
+    input.focus(); input.select();
+  }, 100);
+}
 
-  const input = document.createElement('input');
-  input.className = 'proj-tab-input';
-  input.value = oldName;
-  label.replaceWith(input);
-  input.focus();
-  input.select();
+function closeRenameModal(){
+  document.getElementById('rename-modal').classList.remove('open');
+}
 
-  function confirm(){
-    const val = input.value.trim()||oldName;
-    renameProjectConfirm(id, val);
-  }
-  input.addEventListener('blur', confirm);
-  input.addEventListener('keydown', ev2=>{
-    if(ev2.key==='Enter'){input.blur();}
-    if(ev2.key==='Escape'){p.name=oldName;input.blur();}
-    ev2.stopPropagation();
-  });
-  input.addEventListener('click', ev2=>ev2.stopPropagation());
+function confirmRenameModal(){
+  const val = document.getElementById('rename-input').value.trim();
+  if(!val || !currentId) return;
+  renameProjectConfirm(currentId, val);
+  closeRenameModal();
 }
 
 /* ─── FORM ─── */
@@ -1901,6 +1913,8 @@ async function saveChangedPassword() {
 
 document.getElementById('modal-input').addEventListener('keydown',ev=>{if(ev.key==='Enter')createProject();if(ev.key==='Escape')closeModal();});
 document.getElementById('modal-bg').addEventListener('click',ev=>{if(ev.target===document.getElementById('modal-bg'))closeModal();});
+document.getElementById('rename-input').addEventListener('keydown',ev=>{if(ev.key==='Enter')confirmRenameModal();if(ev.key==='Escape')closeRenameModal();});
+document.getElementById('rename-modal').addEventListener('click',ev=>{if(ev.target===document.getElementById('rename-modal'))closeRenameModal();});
 
 
 function showWelcomeScreen() {
