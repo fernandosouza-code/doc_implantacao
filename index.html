@@ -361,11 +361,21 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       <span style="font-size:11px;color:rgba(255,255,255,0.55);white-space:nowrap;font-weight:500">Cliente:</span>
       <select id="filter-cliente" onchange="onFilterCliente()" style="font-family:'Geist',sans-serif;font-size:12px;font-weight:600;padding:5px 10px;background:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:var(--cobli-indigo);cursor:pointer;min-width:170px;max-width:260px"></select>
       <button type="button" id="btn-edit-cliente" onclick="openRenameModal()" title="Editar nome do projeto" style="font-size:13px;color:rgba(255,255,255,.6);padding:5px 8px;border-radius:6px;cursor:pointer;border:1px dashed rgba(255,255,255,.2);background:transparent;font-family:'Geist',sans-serif;flex-shrink:0;line-height:1">✎</button>
+      <div id="current-status-pill" class="status-pill" style="display:none"></div>
     </div>
     <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
       <span style="font-size:11px;color:rgba(255,255,255,0.55);white-space:nowrap;font-weight:500">Responsável:</span>
       <select id="filter-responsavel" onchange="onFilterResponsavel()" style="font-family:'Geist',sans-serif;font-size:12px;font-weight:600;padding:5px 10px;background:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:var(--cobli-indigo);cursor:pointer;min-width:140px;max-width:210px">
         <option value="">Todos</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
+      <span style="font-size:11px;color:rgba(255,255,255,0.55);white-space:nowrap;font-weight:500">Status:</span>
+      <select id="filter-status" onchange="onFilterStatus()" style="font-family:'Geist',sans-serif;font-size:12px;font-weight:600;padding:5px 10px;background:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:var(--cobli-indigo);cursor:pointer;min-width:140px;max-width:210px">
+        <option value="">Todos</option>
+        <option>Iniciado</option>
+        <option>Em andamento</option>
+        <option>Concluído</option>
       </select>
     </div>
     <button class="btn-new-proj" onclick="openNewModal()">+ novo cliente</button>
@@ -675,6 +685,7 @@ const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* ─── ESTADO GLOBAL ─── */
 let projects = [];
+let projectStatusCache = {};
 let currentId = null;
 let currentUser = null;
 let userProfile = null;
@@ -818,6 +829,11 @@ async function loadProjects() {
     if (profiles) profiles.forEach(p => { window._ownerEmails[p.id] = p.email; });
   }
 
+  // Cache do status do mapeamento de cada projeto, usado no filtro e na etiqueta do topo
+  const { data: allData } = await supa.from('project_data').select('project_id, form_json');
+  projectStatusCache = {};
+  (allData || []).forEach(pd => { projectStatusCache[pd.project_id] = pd.form_json?.dados?.statusMapa || 'Iniciado'; });
+
   renderProjBar();
 }
 
@@ -876,6 +892,8 @@ async function persist() {
     setSaved('saved'); // não trava o usuário
   } else {
     setSaved('saved');
+    projectStatusCache[currentId] = F.dados?.statusMapa || 'Iniciado';
+    updateCurrentStatusPill();
   }
 }
 
@@ -1092,11 +1110,32 @@ function closeModal(){
   document.getElementById('modal-bg').classList.remove('open');
 }
 
+function visibleProjectsForFilters(){
+  const ownerId = document.getElementById('filter-responsavel')?.value || '';
+  const statusFilter = document.getElementById('filter-status')?.value || '';
+  return projects.filter(p =>
+    (!ownerId || p.owner_id === ownerId) &&
+    (!statusFilter || (projectStatusCache[p.id] || 'Iniciado') === statusFilter)
+  );
+}
+
+function updateCurrentStatusPill(){
+  const pill = document.getElementById('current-status-pill');
+  if (!pill) return;
+  const st = currentId ? (projectStatusCache[currentId] || 'Iniciado') : '';
+  if (st) {
+    pill.textContent = st;
+    pill.className = 'status-pill ' + mapaClass(st);
+    pill.style.display = 'inline-block';
+  } else {
+    pill.style.display = 'none';
+  }
+}
+
 function renderProjBar(){
   const clienteSelect = document.getElementById('filter-cliente');
   if (!clienteSelect) return;
-  const respFilter   = document.getElementById('filter-responsavel')?.value || '';
-  let visibleProjects = respFilter ? projects.filter(p => p.owner_id === respFilter) : projects;
+  const visibleProjects = visibleProjectsForFilters();
   const prevCliente = clienteSelect.value;
   clienteSelect.innerHTML = '<option value="">— Todos os clientes —</option>' +
     visibleProjects.map(p => `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${e(p.name)}</option>`).join('');
@@ -1114,6 +1153,7 @@ function renderProjBar(){
     });
     respSelect.value = cur;
   }
+  updateCurrentStatusPill();
 }
 
 function onFilterCliente() {
@@ -1122,17 +1162,21 @@ function onFilterCliente() {
   if (selected !== currentId) switchProject(selected);
 }
 
-function onFilterResponsavel() {
-  const ownerId = document.getElementById('filter-responsavel').value;
-  const visibleProjects = ownerId ? projects.filter(p => p.owner_id === ownerId) : projects;
+function refreshClienteFilter() {
+  const ownerId = document.getElementById('filter-responsavel')?.value || '';
+  const statusFilter = document.getElementById('filter-status')?.value || '';
+  const visibleProjects = visibleProjectsForFilters();
   const clienteSelect = document.getElementById('filter-cliente');
   clienteSelect.innerHTML = '<option value="">— Todos os clientes —</option>' +
     visibleProjects.map(p => `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${e(p.name)}</option>`).join('');
-  if (ownerId && visibleProjects.length > 0 && !visibleProjects.find(p => p.id === currentId)) {
+  if ((ownerId || statusFilter) && visibleProjects.length > 0 && !visibleProjects.find(p => p.id === currentId)) {
     switchProject(visibleProjects[0].id);
     clienteSelect.value = visibleProjects[0].id;
   } else { clienteSelect.value = currentId || ''; }
 }
+
+function onFilterResponsavel() { refreshClienteFilter(); }
+function onFilterStatus() { refreshClienteFilter(); }
 
 function openRenameModal(){
   if(!currentId) return;
