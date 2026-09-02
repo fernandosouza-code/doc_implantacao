@@ -264,6 +264,7 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
 .tl-dates{font-size:10px;color:var(--text3);white-space:nowrap;width:110px;text-align:right;flex-shrink:0}
 .empty-dash{padding:3rem;text-align:center;color:var(--text3);font-size:13px}
 
+@media (max-width:768px){
   .fg.c2,.fg.c3{grid-template-columns:1fr}
   .cost-summary{grid-template-columns:1fr}
   .topnav,.proj-bar,.content,.export-bar{padding-left:16px;padding-right:16px}
@@ -385,6 +386,13 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       <select id="dash-filter" onchange="renderDashboard()">
         <option value="all">Todos os projects</option>
       </select>
+      <label>Status do mapeamento:</label>
+      <select id="dash-status-filter" onchange="renderDashboard()">
+        <option value="all">Todos os status</option>
+        <option>Iniciado</option>
+        <option>Em andamento</option>
+        <option>Concluído</option>
+      </select>
     </div>
     <div id="dash-body"></div>
   </div>
@@ -397,9 +405,14 @@ table.g tr.task-tr:hover td{background:var(--gray50)}
       </div>
       <div class="card-body open">
         <div class="tip-wrap"><div class="tip-icon">?</div><span class="tip-label">Como preencher esta seção?</span><div class="tip-box"><strong>Dados chave do projeto</strong>Cartão de identidade do projeto — preencha assim que o contrato for fechado.<ul><li><b>Nome do cliente:</b> identificação interna</li><li><b>Responsável:</b> quem da Cobli lidera</li><li><b>Patrocinador:</b> decisor do lado do cliente</li><li><b>Produto:</b> solução contratada</li><li><b>Data e prazo:</b> base para cronograma e SLA</li><li><b>Entregáveis:</b> o que será entregue ao final</li></ul></div></div>
-        <div class="fg c2">
+        <div class="fg c3">
           <div class="f"><label>Nome do cliente</label><input id="f-nome" placeholder="Ex: Cliente XPTO" onchange="saveF()"></div>
           <div class="f"><label>Responsável (Cobli)</label><input id="f-resp" onchange="saveF()"></div>
+          <div class="f"><label>Status do mapeamento</label><select id="f-statusMapa" onchange="saveF()">
+            <option>Iniciado</option>
+            <option>Em andamento</option>
+            <option>Concluído</option>
+          </select></div>
         </div>
         <div class="fg c2">
           <div class="f"><label>Patrocinador / cliente</label><input id="f-pat" onchange="saveF()"></div>
@@ -1150,6 +1163,7 @@ function syncFormFields() {
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
   const d=F.dados;
   ['nome','resp','pat','prod','data','prazo','crit','entrega'].forEach(k=>set('f-'+k,d[k]));
+  set('f-statusMapa', d.statusMapa || 'Iniciado');
   ['total','tipo','atende','obscompat','custom'].forEach(k=>set('fr-'+k,d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]));
   set('c-obs',d.cObs);
   renderStk(); renderMatriz(); renderEnvios(); renderBases(); renderRisks(); renderCosts(); renderFrPlanilha();
@@ -1212,6 +1226,7 @@ function renderFrPlanilha(){
 function saveF(){
   const d={...(F.dados||{})};
   ['nome','resp','pat','prod','data','prazo','crit','entrega'].forEach(k=>d[k]=getVal('f-'+k));
+  d.statusMapa=getVal('f-statusMapa')||'Iniciado';
   ['total','tipo','atende','obscompat','custom'].forEach(k=>d['fr'+k.charAt(0).toUpperCase()+k.slice(1)]=getVal('fr-'+k));
   d.cObs=getVal('c-obs');
   F.dados=d;
@@ -1572,6 +1587,10 @@ function mappingStatus(f){
 function statusLabel(s){ return {late:'Atrasado',andamento:'Em Andamento',new:'Novo'}[s]||s; }
 function statusClass(s){ return {late:'sp-late',andamento:'sp-new',new:'sp-new'}[s]||'sp-new'; }
 
+/* Status do mapeamento: campo manual preenchido pelo responsável do projeto
+   (Iniciado / Em andamento / Concluído), usado no filtro do dashboard. */
+function mapaClass(s){ return {'Iniciado':'sp-new','Em andamento':'sp-risk','Concluído':'sp-ok'}[s]||'sp-new'; }
+
 function updateDashFilter(){
   const sel=document.getElementById('dash-filter');
   const cur=sel.value;
@@ -1582,6 +1601,7 @@ function updateDashFilter(){
 async function renderDashboard(){
   updateDashFilter();
   const filter=document.getElementById('dash-filter').value;
+  const statusFilter=document.getElementById('dash-status-filter')?.value || 'all';
   const list=filter==='all'?projects:projects.filter(p=>p.id===filter);
 
   if(!list.length){
@@ -1590,8 +1610,8 @@ async function renderDashboard(){
   }
 
   const { data } = await supa.from('project_data').select('*');
-  
-  const allData=list.map(p=>{
+
+  let allData=list.map(p=>{
     const pd = data?.find(d => d.project_id === p.id);
     return {
       p,
@@ -1599,6 +1619,15 @@ async function renderDashboard(){
       g: pd?.gantt_json || {startDate:'',endDate:'',tasks:[]}
     };
   });
+
+  if(statusFilter!=='all'){
+    allData=allData.filter(({f})=>(f.dados?.statusMapa||'Iniciado')===statusFilter);
+  }
+
+  if(!allData.length){
+    document.getElementById('dash-body').innerHTML=`<div class="empty-dash">Nenhum projeto encontrado para o status "${e(statusFilter)}".</div>`;
+    return;
+  }
 
   const totalProj=allData.length;
   const lateCount=allData.filter(({f})=>mappingStatus(f)==='late').length;
@@ -1683,6 +1712,7 @@ async function renderDashboard(){
   html+=`<div class="dash-section-title">Status por projeto</div><div class="proj-cards">`;
   allData.forEach(({p,f})=>{
     const status=mappingStatus(f);
+    const statusMapa=f.dados?.statusMapa||'Iniciado';
     const custos=f.costs.filter(c=>c.cat!=='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
     const adesao=f.costs.filter(c=>c.cat==='Adesão').reduce((s,c)=>s+(parseFloat(c.val)||0),0);
     const dif=adesao-custos;
@@ -1690,7 +1720,10 @@ async function renderDashboard(){
     html+=`<div class="proj-card">
       <div class="proj-card-head">
         <div class="proj-card-name" title="${e(p.name)}">${e(p.name)}</div>
-        <div class="status-pill ${statusClass(status)}">${statusLabel(status)}</div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <div class="status-pill ${mapaClass(statusMapa)}">${e(statusMapa)}</div>
+          <div class="status-pill ${statusClass(status)}">${statusLabel(status)}</div>
+        </div>
       </div>
       <div class="proj-card-body">
         <div class="proj-row"><span class="proj-row-label">Responsável</span><span class="proj-row-val">${f.dados.resp||'—'}</span></div>
@@ -1727,7 +1760,7 @@ async function renderDashboard(){
 /* ─── EXPORTS & LISTENERS ─── */
 function exportXLSX(){
   const wb=XLSX.utils.book_new(),d=F.dados||{};
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Campo','Detalhe'],['Nome',d.nome],['Responsável',d.resp],['Patrocinador',d.pat],['Produto',d.prod],['Data início',d.data],['Prazo (dias)',d.prazo],['Critérios',d.crit],['Entregáveis',d.entrega]]),'Dados Chave');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Campo','Detalhe'],['Nome',d.nome],['Responsável',d.resp],['Status do mapeamento',d.statusMapa||'Iniciado'],['Patrocinador',d.pat],['Produto',d.prod],['Data início',d.data],['Prazo (dias)',d.prazo],['Critérios',d.crit],['Entregáveis',d.entrega]]),'Dados Chave');
   const sr=[['Papel','Nome','Empresa','Telefone','E-mail']];F.stk.forEach(s=>sr.push([s.papel,s.nome,s.empresa,s.tel,s.email]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sr),'Stakeholders');
   const mr=[['Informação/Assunto','Para quem','Quando','Como','Responsável']];F.matriz.forEach(m=>mr.push([m.assunto,m.para,m.quando,m.como,m.resp]));
@@ -1818,7 +1851,7 @@ function exportPDF(mode='interno'){
   const badge=isCliente?`<span class="badge badge-cliente">Documento Cliente</span>`:`<span class="badge badge-interno">Uso Interno</span>`;
   let body=`<div class="hdr"><svg width="32" height="32" viewBox="0 0 1100.05 1214.25" xmlns="http://www.w3.org/2000/svg" fill="#07074E"><path d="M530.24,400.11c21.82-8.1,44.81-12.67,68.31-13.59,35.67-1.4,70.01,5.53,102.08,20.55,3.79,1.77,7.77,2.61,11.69,2.61,10.37,0,20.31-5.88,25.01-15.89,6.47-13.8,.52-30.23-13.28-36.7-39.57-18.54-83.71-27.43-127.65-25.73-29.35,1.14-58.07,6.86-85.38,16.99-14.29,5.3-21.57,21.19-16.27,35.48s21.19,21.57,35.48,16.27Z"/><path d="M800.24,272.45c-13.19-7.63-30.08-3.12-37.7,10.08-7.63,13.19-3.12,30.07,10.08,37.7,41.55,24.02,78.1,57.48,105.7,96.76,5.37,7.65,13.92,11.73,22.6,11.73,5.48,0,11.02-1.63,15.84-5.02,12.47-8.76,15.48-25.98,6.71-38.45-32.18-45.79-74.79-84.8-123.23-112.81Z"/><path d="M1099.95,908.94c-2.96-76.18-67.12-135.53-143.3-132.57-36.24,1.41-68.65,16.69-92.38,40.5-1.52,1.17-2.94,2.51-4.23,4.03-59.91,70.83-147.4,113.52-240.04,117.13-88.4,3.46-172.82-27.75-237.76-87.82-64.93-60.07-102.58-141.83-106.02-230.21-3.44-88.39,27.75-172.82,87.82-237.75s141.83-102.58,230.22-106.02c34.19-1.33,68.09,2.55,100.75,11.52,14.69,4.04,29.88-4.6,33.92-19.3,3.87-14.06-3.89-28.55-17.45-33.31-22.61-6.36-46.01-10.72-70.01-12.85-.11,0-.22-.02-.33-.03-3-.26-6.01-.49-9.04-.68-.26-.02-.52-.04-.78-.05-6.16-.38-12.35-.61-18.58-.7-103.12,4.01-198.5,47.94-268.58,123.69-85.32,92.22-124.92,214.19-109.34,336.75,15.57,122.56,82.09,232.1,182.52,303.69,100.43,71.59,225.09,99.27,346.08,76.69,121-22.58,228.12-91.72,298.22-193.02,26.29-26.26,41.98-62.98,40.42-103.04Z"/><path d="M449.27,413.4c-10.88-10.68-28.35-10.52-39.03,.36-53.06,54.05-81.81,128.44-78.87,204.09,5.77,148.42,128.35,265.25,275.62,265.24,3.6,0,7.23-.07,10.86-.21,43.56-1.7,84.87-13.19,122.77-34.17,13.33-7.38,18.16-24.17,10.78-37.51-7.38-13.33-24.18-18.16-37.51-10.78-30.28,16.76-63.32,25.95-98.19,27.3-58.91,2.29-115.22-18.5-158.5-58.55-43.29-40.05-68.39-94.55-70.68-153.48-2.39-61.42,20.02-119.4,63.1-163.28,10.68-10.88,10.52-28.35-.36-39.03Z"/></svg><div><div style="font-size:15px;font-weight:bold">Cobli · Field Engineering</div><div style="font-size:11px;color:#5a6080">Gerado em ${new Date().toLocaleDateString('pt-BR')}</div></div></div><h1>${d.nome||'Projeto de Implantação'} ${badge}</h1>
   ${sec('Dados chave')}
-  <div class="kv"><div class="k">Responsável</div><div class="v">${d.resp||''}</div><div class="k">Patrocinador</div><div class="v">${d.pat||''}</div><div class="k">Produto</div><div class="v">${d.prod||''}</div><div class="k">Data início</div><div class="v">${d.data||''}</div><div class="k">Prazo</div><div class="v">${d.prazo||''} dias</div><div class="k">Critérios de sucesso</div><div class="v">${d.crit||''}</div></div>
+  <div class="kv"><div class="k">Responsável</div><div class="v">${d.resp||''}</div><div class="k">Status do mapeamento</div><div class="v">${d.statusMapa||'Iniciado'}</div><div class="k">Patrocinador</div><div class="v">${d.pat||''}</div><div class="k">Produto</div><div class="v">${d.prod||''}</div><div class="k">Data início</div><div class="v">${d.data||''}</div><div class="k">Prazo</div><div class="v">${d.prazo||''} dias</div><div class="k">Critérios de sucesso</div><div class="v">${d.crit||''}</div></div>
   ${sec('Partes interessadas')}
   <table><thead><tr><th>Papel</th><th>Nome</th><th>Empresa</th><th>Telefone</th><th>E-mail</th></tr></thead><tbody>${stH}</tbody></table>
   <h3 style="font-size:12px;font-weight:600;color:#07074E;margin:12px 0 6px">2.1 Matriz de comunicação</h3>
